@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0"
         id="com.eventfive.engage-app" version="1.0.0">
-        <name>DannDann</name>
+        <name>engage-app</name>
         <description>
-                DannDann
+                engage-app
         </description>
         <author href="https://github.com/eventfive/engage-app" email="contact@eventfive.de">
                 engage-app
