@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0"
+        id="com.eventfive.engage-app" version="1.0.0">
+        <name>DannDann</name>
+        <description>
+                DannDann
+        </description>
+        <author href="https://github.com/eventfive/engage-app" email="contact@eventfive.de">
+                engage-app
+        </author>
+        <access origin="*" />
+        <!-- <feature name="http://api.phonegap.com/1.0/device" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/battery" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/camera" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/contacts" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/file" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/geolocation" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/media" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/network" /> -->
+        <!-- <feature name="http://api.phonegap.com/1.0/notification" /> -->
+        <!-- <preference name="target-device" value="universal" /> -->
+        <!-- <preference name="fullscreen" value="false" /> -->
+        <!-- <preference name="orientation" value="portrait" /> -->
+        <!-- <preference name="android-minSdkVersion" value="12" /> -->
+
+        <gap:splash src="splash.png" />
+        <!-- <preference name="auto-hide-splash-screen" value="false" /> -->
+        <preference name="splash-screen-duration" value="3000" />
+
+        <!-- <preference name="phonegap-version" value="3.0.0" /> -->
+
+        <gap:plugin name="org.apache.cordova.device" />
+        <gap:plugin name="org.apache.cordova.splashscreen" />
+        <!-- <gap:plugin name="org.apache.cordova.core.camera" /> -->
+        <!-- <gap:plugin name="org.apache.cordova.file" /> -->
+        <!-- <gap:plugin name="org.apache.cordova.file-transfer" /> -->
+        <!-- <gap:plugin name="org.apache.cordova.media-capture" /> -->
+        <!-- <gap:plugin name="org.apache.cordova.media" /> -->
+</widget>
