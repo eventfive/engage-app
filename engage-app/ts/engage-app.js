@@ -4,8 +4,8 @@ var engage;
         var Ressource = (function () {
             function Ressource() {
             }
-            Ressource.ASSET_PATH = "engage-app/assets";
-            Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+            Ressource.ASSET_PATH = "engage-map/assets";
+            Ressource.CLOUD_DATA_REQUEST = "data.init.json";
             return Ressource;
         })();
         model.Ressource = Ressource;
@@ -2972,6 +2972,10 @@ var engage;
                     media.path = "/assets/best_practices/" + media.path;
                 }
 
+                this.data.menu.sort(function (a, b) {
+                    return a.order - b.order;
+                });
+
                 //sort filter elements
                 this.data.topic.sort(this.sortOnOrder);
                 this.data.technology.sort(this.sortOnOrder);
@@ -5077,19 +5081,25 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
-                    item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="' + menu[i].icon_url + '"/></div>');
+                    item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="..' + menu[i].icon_url + '"/></div>');
                     this.container.append(item);
                     item.bind('click', function () {
-                        self.handleClickItem(this);
+                        self.handleClickItem($(this));
                     });
                 }
             };
             MenuHandler.prototype.handleClickItem = function (item) {
-                var type = item.attr("data-type");
+                if (this.selectedItem == item)
+                    return;
+                if (this.selectedItem)
+                    this.selectedItem.removeClass("selected");
+                this.selectedItem = item;
+                this.selectedItem.addClass("selected");
+                var type = this.selectedItem.attr("data-type");
                 if (type == "map") {
                     this.app.openMap();
                 } else {
-                    var key = item.attr("data-key");
+                    var key = this.selectedItem.attr("data-key");
                     this.app.openPage(key);
                 }
             };
