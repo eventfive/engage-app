@@ -4,7 +4,7 @@ var engage;
         var Ressource = (function () {
             function Ressource() {
             }
-            Ressource.ASSET_PATH = "engage-map/assets";
+            Ressource.ASSET_PATH = "engage-app/assets";
             Ressource.CLOUD_DATA_REQUEST = "data.init.json";
             return Ressource;
         })();
