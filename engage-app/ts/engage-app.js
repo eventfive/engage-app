@@ -5096,7 +5096,7 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
-                    var imgURL = "/engage-app/" + menu[i].icon_url;
+                    var imgURL = "/engage-app" + menu[i].icon_url;
                     item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="..' + imgURL + '"/></div>');
                     this.container.append(item);
                     item.bind('click', function () {
