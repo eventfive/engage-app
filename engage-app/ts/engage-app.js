@@ -3936,7 +3936,7 @@ var engage;
                 this.handleResize();
             }
             FilterList.prototype.handleResize = function () {
-                $(".e5map .filter_list").css("max-height", ($(".main_container").height() - 80) + "px");
+                $(".e5map .filter_list").css("max-height", ($(".main_container").height() - $(".filter_list").position().top) + "px");
             };
 
             FilterList.prototype.handleChangeSearch = function () {

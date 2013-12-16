@@ -1819,8 +1819,16 @@ html,body {
 	top: 0;
 	left: 0;
 	right: 0;
-	bottom: 155px;
+	bottom: 130px;
 	height: auto;
+}
+
+.e5map .list_container {
+	position: absolute;
+	left: 0px;
+	right: 0;
+	bottom: 0;
+	height:130px;
 }
 
 #map_holder {
@@ -1847,13 +1855,6 @@ html,body {
 .e5map .list_container .project_list {
 	/* background-color:#FF00FF; */
 	
-}
-
-.e5map .list_container {
-	position: absolute;
-	left: 0px;
-	right: 0;
-	bottom: 0;
 }
 
 .e5map .project_preview .bottom_content .description {
@@ -1922,9 +1923,21 @@ html,body {
 
 .e5map .filter .filter_header {
 	margin-left: 0;
+	display: none;
 }
 
 .e5map .clear_btn {
+	left: 0px;
+}
+
+.e5map .filter,
+.e5map .filter_title,
+.e5map .filter_item,
+.e5map .filter_list{
+	width:auto;
+}
+
+.e5map .filter:before {
 	left: 0px;
 }
 .menu{
