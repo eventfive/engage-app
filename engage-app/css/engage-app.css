@@ -1952,3 +1952,91 @@ html,body {
 .menu_item.selected{
     background: url(../assets/menu-bg-selected.png);
 }
+.map .page_container{
+    display: none;
+}
+.page_container{
+    display: block;
+    background: #fff;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: Unit-Light,"Lucida Sans Unicode";
+}
+.page_container p{
+    color: #000000;
+    font-family: Unit-Light,"Lucida Sans Unicode";
+    font-size: 1em;
+    line-height: 1.5em;
+    margin: 0 24px 1.5em;
+}
+.page_container h1{
+    border-bottom: 1px solid #C8AD9B;
+    color: #000000;
+    font-family: Sanuk-Bold,"Lucida Sans Unicode";
+    font-size: 3em;
+    line-height: 1em;
+    margin-bottom: 0.25em;
+    padding: 0 24px 0.25em;
+}
+.page_container h2, .page_container h3 {
+    color: #114A63;
+    font-family: Sanuk-Regular,"Lucida Sans Unicode";
+    font-size: 1.87em;
+    line-height: 1.2em;
+    margin: 0 24px 0.7em;
+}
+.page_container strong {
+    font-family: Sanuk-Regular,"Lucida Sans Unicode";
+    font-weight: normal;
+}
+.page_container ul {
+    list-style: disc outside none;
+    padding: 0 24px 1.5em;
+}
+.page_container li {
+    list-style-position: outside;
+    margin-left: 1em;
+}
+.page_container .e5_slideshow{
+    height: 150px;
+}
+.page_container .e5_slideshow_container{
+    padding: 0;
+}
+.page_container .e5_slideshow_container[style]{
+    top: 0 !important;
+}
+.page_container .e5_slideshow:hover .e5_slideshow_footer{
+    display: none;
+}
+.page_container .e5_slideshow_container{
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+.langBtn_container{
+    text-align: right;
+    margin-bottom: 5px;
+}
+.langBtn{
+    height: 30px;
+    width: 30px;
+    display: inline-block;
+    margin: 0 5px;
+    background-image: url(../assets/uk.png);
+    background-size: 30px 30px;
+}
+.langBtn[data-lang="_fi"]{
+    background-image: url(../assets/fi.png);
+}
+.langBtn[data-lang="_pl"]{
+    background-image: url(../assets/pl.png);
+}
+.langBtn[data-lang="_fr"]{
+    background-image: url(../assets/fr.png);
+}
+iframe{
+    border: none;
+}

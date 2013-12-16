@@ -4,8 +4,8 @@ var engage;
         var Ressource = (function () {
             function Ressource() {
             }
-            Ressource.ASSET_PATH = "engage-app/assets";
-            Ressource.CLOUD_DATA_REQUEST = "data.init.json";
+            Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+            Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             return Ressource;
         })();
         model.Ressource = Ressource;
@@ -2479,6 +2479,10 @@ else if (value > (l - 1))
                 this.index(0);
             };
 
+            Slideshow.prototype.setContainerPadding = function (value) {
+                this._containerPadding = value;
+                this.resize();
+            };
             Slideshow.prototype.openMedia = function (item) {
                 var _this = this;
                 if (this._current == item)
@@ -2982,6 +2986,7 @@ var engage;
                     if (!med)
                         med = [];
                     med.push(this.data.page_media[i].media);
+                    this.data.page_media[i].page.media = med;
                 }
 
                 //sort filter elements
@@ -3191,8 +3196,6 @@ else
                 var l = matchings.length;
                 for (var i = 0; i < l; ++i) {
                     var matching = matchings[i];
-                    if (targetField == "influence")
-                        console.log(matching[equalField], value);
                     if (matching[equalField] == value)
                         res.push(matching[targetField]);
                 }
@@ -5083,6 +5086,21 @@ $(window).ready(function () {
 });
 var engage;
 (function (engage) {
+    (function (model) {
+        var PublishType = (function () {
+            function PublishType() {
+            }
+            PublishType.RELEASE = "release";
+            PublishType.DEBUG_AS_APP = "debugAsApp";
+            PublishType.DEBUG_AS_WEB = "debugAsWeb";
+            return PublishType;
+        })();
+        model.PublishType = PublishType;
+    })(engage.model || (engage.model = {}));
+    var model = engage.model;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
     (function (menu) {
         var MenuHandler = (function () {
             function MenuHandler(app, container) {
@@ -5096,7 +5114,8 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
-                    var imgURL = "engage-app" + menu[i].icon_url;
+                    console.log("ASSET DIR", engage.model.Ressource.ASSET_PATH);
+                    var imgURL = engage.model.Ressource.ASSET_PATH + "/" + menu[i].icon_url;
                     item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="' + imgURL + '"/></div>');
                     this.container.append(item);
                     item.bind('click', function () {
@@ -5107,6 +5126,15 @@ var engage;
             MenuHandler.prototype.handleClickItem = function (item) {
                 if (this.selectedItem == item)
                     return;
+                this.selectItem(item);
+            };
+            MenuHandler.prototype.setSelectedPage = function (key) {
+                var item = $("[data-type='page'][data-key='" + key + "']");
+                if (!item || this.selectedItem == item)
+                    return;
+                this.selectItem(item);
+            };
+            MenuHandler.prototype.selectItem = function (item) {
                 if (this.selectedItem)
                     this.selectedItem.removeClass("selected");
                 this.selectedItem = item;
@@ -5138,12 +5166,19 @@ var engage;
                 var media = $("<div class='media'></div>");
                 this.container.append(media);
                 this.mediaSlide = new e5.ui.Slideshow(media);
+                this.mediaSlide.minContainerHeight = 10;
+                this.mediaSlide.setContainerPadding(0);
 
                 this.title = $("<h1></h1>");
                 this.container.append(this.title);
 
                 this.text = $("<div class='page_text'></div>");
                 this.container.append(this.text);
+
+                var self = this;
+                this.container.on('click', '.langBtn', function () {
+                    self.handleClickItem($(this));
+                });
             };
             PageHandler.prototype.load = function (key) {
                 if (this._key == key)
@@ -5153,6 +5188,17 @@ var engage;
                     this.mediaSlide.load(this.app.manager.getPageByKey(this._key).media);
                 this.title.text(this.app.manager.label("page_title_" + this._key));
                 this.text.html(this.app.manager.label("page_text_" + this._key));
+            };
+            PageHandler.prototype.handleClickItem = function (item) {
+                var lang = item.attr("data-lang");
+                if (this._lang == lang)
+                    return;
+                this._lang = lang;
+                this.changeLang(lang);
+            };
+            PageHandler.prototype.changeLang = function (lang) {
+                this.title.text(this.app.manager.label("page_title_" + this._key + lang));
+                this.text.html(this.app.manager.label("page_text_" + this._key + lang));
             };
             return PageHandler;
         })();
@@ -5165,6 +5211,19 @@ var engage;
     var MobileApplication = (function (_super) {
         __extends(MobileApplication, _super);
         function MobileApplication(wrapper) {
+            var publishType = engage.model.PublishType.RELEASE;
+
+            if (publishType == engage.model.PublishType.RELEASE) {
+                engage.model.Ressource.ASSET_PATH = "engage-app/assets";
+                engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+            } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
+                engage.model.Ressource.ASSET_PATH = "engage-app/assets";
+                engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
+            } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
+                engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
+                engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+            }
+
             _super.call(this, wrapper);
         }
         MobileApplication.prototype.handleComplete = function () {
@@ -5172,13 +5231,15 @@ var engage;
             _super.prototype.handleComplete.call(this);
             $("body").removeClass("map");
 
-            var page_container = $("<div class='page'></div>");
+            var page_container = $("<div class='page_container'></div>");
             $("#content").append(page_container);
             this.page = new engage.page.PageHandler(this, page_container);
 
             var menu_container = $("<div class='menu'></div>");
             $("body").append(menu_container);
             this.menu = new engage.menu.MenuHandler(this, menu_container);
+
+            this.menu.setSelectedPage("about");
         };
 
         MobileApplication.prototype.openMap = function () {
