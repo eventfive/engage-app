@@ -4,8 +4,8 @@ var engage;
         var Ressource = (function () {
             function Ressource() {
             }
-            Ressource.ASSET_PATH = "engage-app/assets";
-            Ressource.CLOUD_DATA_REQUEST = "data.init.json";
+            Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+            Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             return Ressource;
         })();
         model.Ressource = Ressource;
@@ -5096,7 +5096,8 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
-                    item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="..' + menu[i].icon_url + '"/></div>');
+                    var imgURL = engage.model.Ressource.ASSET_PATH + " / " + menu[i].icon_url;
+                    item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="..' + imgURL + '"/></div>');
                     this.container.append(item);
                     item.bind('click', function () {
                         self.handleClickItem($(this));
