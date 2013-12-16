@@ -4,8 +4,8 @@ var engage;
         var Ressource = (function () {
             function Ressource() {
             }
-            Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
-            Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+            Ressource.ASSET_PATH = "engage-app/assets";
+            Ressource.CLOUD_DATA_REQUEST = "data.init.json";
             return Ressource;
         })();
         model.Ressource = Ressource;
