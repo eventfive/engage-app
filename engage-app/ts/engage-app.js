@@ -2976,6 +2976,14 @@ var engage;
                     return a.order - b.order;
                 });
 
+                var l = this.data.page_media.length;
+                for (var i = 0; i < l; ++i) {
+                    var med = this.data.page_media[i].page.media;
+                    if (!med)
+                        med = [];
+                    med.push(this.data.page_media[i].media);
+                }
+
                 //sort filter elements
                 this.data.topic.sort(this.sortOnOrder);
                 this.data.technology.sort(this.sortOnOrder);
@@ -3195,6 +3203,13 @@ else
                 return a.order - b.order;
             };
 
+            DataManager.prototype.getPageByKey = function (key) {
+                var l = this.data.page.length;
+                for (var i = 0; i < l; ++i) {
+                    if (this.data.page[i].key == key)
+                        return this.data.page[i];
+                }
+            };
             DataManager.prototype.label = function (key) {
                 var lab = this._labels[key];
                 if (lab)
@@ -5111,13 +5126,55 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
+    (function (page) {
+        var PageHandler = (function () {
+            function PageHandler(app, container) {
+                this.app = app;
+                this.container = container;
+                this.create();
+            }
+            PageHandler.prototype.create = function () {
+                var media = $("<div class='media'></div>");
+                this.container.append(media);
+                this.mediaSlide = new e5.ui.Slideshow(media);
+
+                this.title = $("<h1></h1>");
+                this.container.append(this.title);
+
+                this.text = $("<div class='page_text'></div>");
+                this.container.append(this.text);
+            };
+            PageHandler.prototype.load = function (key) {
+                if (this._key == key)
+                    return;
+                this._key = key;
+                if (this.app.manager.getPageByKey(this._key).media)
+                    this.mediaSlide.load(this.app.manager.getPageByKey(this._key).media);
+                this.title.text(this.app.manager.label("page_title_" + this._key));
+                this.text.html(this.app.manager.label("page_text_" + this._key));
+            };
+            return PageHandler;
+        })();
+        page.PageHandler = PageHandler;
+    })(engage.page || (engage.page = {}));
+    var page = engage.page;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
     var MobileApplication = (function (_super) {
         __extends(MobileApplication, _super);
         function MobileApplication(wrapper) {
             _super.call(this, wrapper);
         }
         MobileApplication.prototype.handleComplete = function () {
+            $("body").addClass("map");
             _super.prototype.handleComplete.call(this);
+            $("body").removeClass("map");
+
+            var page_container = $("<div class='page'></div>");
+            $("#content").append(page_container);
+            this.page = new engage.page.PageHandler(this, page_container);
+
             var menu_container = $("<div class='menu'></div>");
             $("body").append(menu_container);
             this.menu = new engage.menu.MenuHandler(this, menu_container);
@@ -5126,8 +5183,9 @@ var engage;
         MobileApplication.prototype.openMap = function () {
             $("body").addClass("map");
         };
-        MobileApplication.prototype.openPage = function (type) {
+        MobileApplication.prototype.openPage = function (key) {
             $("body").removeClass("map");
+            this.page.load(key);
         };
         return MobileApplication;
     })(engage.Application);

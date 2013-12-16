@@ -1807,12 +1807,11 @@ html,#content,#map_holder {
 
 html,body {
 	overflow: hidden;
-	
-	position:absolute;
-	left:0;
-	right:0;
-	bottom:0;
-	top:0;
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	top: 0;
 }
 
 .e5map .main_container {
@@ -1822,6 +1821,14 @@ html,body {
 	right: 0;
 	bottom: 155px;
 	height: auto;
+}
+
+#map_holder {
+	display: none;
+}
+
+.map #map_holder {
+	display: block;
 }
 
 .e5map .project_preview {
@@ -1900,29 +1907,47 @@ html,body {
 }
 
 #content {
-	height:auto;
-	position:absolute;
-	left:0;
-	right:0;
-	top:0;
-	bottom:90px;
+	height: auto;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 45px;
+}
+
+.e5map .search_container,
+.e5map .filter_list {
+	padding-left: 0px;
+}
+
+.e5map .filter .filter_header {
+	margin-left: 0;
+}
+
+.e5map .clear_btn {
+	left: 0px;
 }
 .menu{
     position: fixed;
     width: 100%;
-    height: 90px;
+    height: 45px;
     bottom: 0;
     display: table;
     z-index: 2000;
 }
 .menu_item{
     background: url(../assets/menu-bg.png);
+    background-size: auto 45px;
     background-repeat: repeat-x;
     display: table-cell;
     text-align: center;
     border-left: 1px solid rgba(0,0,0,0.3);
     border-right: 1px solid rgba(255,255,255,0.1);
     line-height: 0px;
+}
+.menu_item img{
+    height: 45px;
+    width: 45px;
 }
 .menu_item.selected{
     background: url(../assets/menu-bg-selected.png);
