@@ -5264,7 +5264,7 @@ var engage;
             var publishType = engage.model.PublishType.RELEASE;
 
             if (publishType == engage.model.PublishType.RELEASE) {
-                engage.model.Ressource.ASSET_PATH = "/engage-app/assets";
+                engage.model.Ressource.ASSET_PATH = "/assets/www/engage-app/assets";
                 engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
             } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
