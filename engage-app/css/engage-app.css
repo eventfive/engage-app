@@ -1801,6 +1801,17 @@ body {
 	{
 	display: none;
 }
+@font-face {font-family: Unit-Light;src: url("../assets/fonts/UnitWeb-Light.eot");}
+@font-face {font-family: Unit-Light;src: url("../assets/fonts/UnitWeb-Light.woff") format("woff");}
+@font-face {font-family: Unit-Regular;src: url("../assets/fonts/UnitWeb.eot");}
+@font-face {font-family: Unit-Regular;src: url("../assets/fonts/UnitWeb.woff") format("woff");}
+@font-face {font-family: Unit-Medium;src: url("../assets/fonts/UnitWeb-Medium.eot");}
+@font-face {font-family: Unit-Medium;src: url("../assets/fonts/UnitWeb-Medium.woff") format("woff");}
+@font-face {font-family: Sanuk-Bold;src: url("../assets/fonts/SanukWeb-Bold.eot");}
+@font-face {font-family: Sanuk-Bold;src: url("../assets/fonts/SanukWeb-Bold.woff") format("woff");}
+@font-face {font-family: Sanuk-Regular;src: url("../assets/fonts/SanukWeb.eot");}
+@font-face {font-family: Sanuk-Regular;src: url("../assets/fonts/SanukWeb.woff") format("woff");}
+  
 html,#content,#map_holder {
 	height: 100%;
 }
@@ -2028,6 +2039,7 @@ img.leaflet-tile {
     bottom: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     font-family: Unit-Light,"Lucida Sans Unicode";
 }
 .page_container p{
