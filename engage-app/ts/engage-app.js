@@ -3505,10 +3505,10 @@ var engage;
                 this._hovered = false;
                 this._open = false;
                 if (!MapMarker._iconURLsResolved) {
-                    MapMarker._iconSettingDefault = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
-                    MapMarker._iconSettingOpen = engage.model.Ressource.ASSET_PATH + "/code-marker-icon-open.png";
-                    MapMarker._iconSettingEngageDefault = engage.model.Ressource.ASSET_PATH + "/code-marker-engage.png";
-                    MapMarker._iconSettingEngageOpen = engage.model.Ressource.ASSET_PATH + "/code-marker-engage-open.png";
+                    MapMarker._iconSettingDefault.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
+                    MapMarker._iconSettingOpen.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon-open.png";
+                    MapMarker._iconSettingEngageDefault.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-engage.png";
+                    MapMarker._iconSettingEngageOpen.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-engage-open.png";
                     MapMarker._iconURLsResolved = true;
                 }
 
