@@ -5329,6 +5329,11 @@ else {
             this.menu = new engage.menu.MenuHandler(this, menu_container);
 
             this.menu.setSelectedPage("about");
+
+            var self = this;
+            $("body").on('click', 'a', function (e) {
+                self.handleClickLink($(this), e);
+            });
         };
 
         MobileApplication.prototype.openMap = function () {
@@ -5337,6 +5342,10 @@ else {
         MobileApplication.prototype.openPage = function (key) {
             $("body").removeClass("map");
             this.page.load(key);
+        };
+        MobileApplication.prototype.handleClickLink = function (link, e) {
+            window.open(link.attr("href"), '_system');
+            e.preventDefault();
         };
         return MobileApplication;
     })(engage.Application);
