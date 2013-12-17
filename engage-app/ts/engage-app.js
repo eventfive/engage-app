@@ -5,6 +5,7 @@ var engage;
             function Ressource() {
             }
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+            Ressource.MEDIA_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             return Ressource;
         })();
@@ -2973,7 +2974,7 @@ var engage;
                 var l = this.data.media.length;
                 for (var i = 0; i < l; ++i) {
                     var media = this.data.media[i];
-                    media.path = "/assets/best_practices/" + media.path;
+                    media.path = engage.model.Ressource.MEDIA_PATH + media.path;
                 }
 
                 this.data.menu.sort(function (a, b) {
@@ -3503,6 +3504,14 @@ var engage;
                 this._filtered = false;
                 this._hovered = false;
                 this._open = false;
+                if (!MapMarker._iconURLsResolved) {
+                    MapMarker._iconSettingDefault = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
+                    MapMarker._iconSettingOpen = engage.model.Ressource.ASSET_PATH + "/code-marker-icon-open.png";
+                    MapMarker._iconSettingEngageDefault = engage.model.Ressource.ASSET_PATH + "/code-marker-engage.png";
+                    MapMarker._iconSettingEngageOpen = engage.model.Ressource.ASSET_PATH + "/code-marker-engage-open.png";
+                    MapMarker._iconURLsResolved = true;
+                }
+
                 this.data.marker = this;
                 this.data.filters.push(this);
 
@@ -3657,6 +3666,8 @@ else
                 iconSize: new L.Point(30, 45),
                 iconAnchor: new L.Point(14, 36)
             };
+
+            MapMarker._iconURLsResolved = false;
             return MapMarker;
         })();
         map.MapMarker = MapMarker;
@@ -5265,12 +5276,15 @@ var engage;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
+                engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                 engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
             } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
+                engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                 engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
             } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
                 engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
+                engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                 engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             }
 

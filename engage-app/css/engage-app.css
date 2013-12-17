@@ -1877,11 +1877,13 @@ html,body {
 }
 
 #map_holder {
-	display: none;
+	/* display: none; */
+	opacity:0;
 }
 
 .map #map_holder {
-	display: block;
+	/* display: block; */
+	opacity:1;
 }
 
 .e5map .project_preview {
@@ -2053,6 +2055,7 @@ img.leaflet-tile {
     border-bottom: 1px solid #C8AD9B;
     color: #000000;
     font-family: Sanuk-Bold,"Lucida Sans Unicode";
+    font-weight: normal;
     font-size: 3em;
     line-height: 1em;
     margin-bottom: 0.25em;
@@ -2061,6 +2064,7 @@ img.leaflet-tile {
 .page_container h2, .page_container h3 {
     color: #114A63;
     font-family: Sanuk-Regular,"Lucida Sans Unicode";
+    font-weight: normal;
     font-size: 1.87em;
     line-height: 1.2em;
     margin: 0 24px 0.7em;
@@ -2135,7 +2139,7 @@ iframe{
 }
 
 .e5map .filter {
-	width: 300px;
+	width: 220px;
 	/* right:0px; */
 	transition: -webkit-transform 0.5s;
 	transition: transform 0.5s;
