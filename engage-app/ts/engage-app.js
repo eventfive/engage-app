@@ -7,6 +7,7 @@ var engage;
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
             Ressource.MEDIA_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+            Ressource.CLOUD_DATA_OFFLINE = "/eventfive/web/engage-app/data.init.json";
             return Ressource;
         })();
         model.Ressource = Ressource;
@@ -1894,8 +1895,8 @@ var e5;
                 this._stepSize = 1;
                 this._inverted = false;
                 this._vertical = true;
-                this._paddingBegin = 11;
-                this._paddingEnd = 11;
+                this._paddingBegin = 6;
+                this._paddingEnd = 6;
                 this._min = min;
                 this._max = max;
                 this._range = this._max - this._min;
@@ -1922,11 +1923,13 @@ var e5;
             }
             Slider.prototype.resize = function () {
                 if (this._vertical) {
-                    this._dragger.setMinLocalY(this._paddingBegin);
-                    this._dragger.setMaxLocalY(this._track.height() - this._paddingEnd);
+                    var halfHeight = this._dragger.getTarget().height() * 0.5;
+                    this._dragger.setMinLocalY(this._paddingBegin + halfHeight);
+                    this._dragger.setMaxLocalY(this._track.height() - this._paddingEnd - halfHeight);
                 } else {
-                    this._dragger.setMinLocalX(this._paddingBegin);
-                    this._dragger.setMaxLocalX(this._track.width() - this._paddingEnd);
+                    var halfWidth = this._dragger.getTarget().width() * 0.5;
+                    this._dragger.setMinLocalX(this._paddingBegin + halfWidth);
+                    this._dragger.setMaxLocalX(this._track.width() - this._paddingEnd - halfWidth);
                 }
             };
 
@@ -2705,7 +2708,7 @@ var engage;
                 if (typeof currentLanguageCode === "undefined") { currentLanguageCode = 'de'; }
                 this.currentLanguageCode = currentLanguageCode;
                 this.onComplete = new e5.core.Signal();
-                this.onProgress = new e5.core.Signal();
+                this.onError = new e5.core.Signal();
                 this.tables = [
                     'best_practice',
                     'best_practice_contact',
@@ -2725,35 +2728,43 @@ var engage;
                     'page_media',
                     'menu'
                 ];
+                this._loadFromWeb = true;
             }
-            BaseDataManager.prototype.load = function () {
+            BaseDataManager.prototype.loadFromWeb = function () {
+                this._loadFromWeb = true;
+                this.load(engage.model.Ressource.CLOUD_DATA_REQUEST);
+            };
+
+            BaseDataManager.prototype.loadFromDisk = function () {
+                this._loadFromWeb = false;
+                this.load(engage.model.Ressource.CLOUD_DATA_OFFLINE);
+            };
+
+            BaseDataManager.prototype.load = function (url) {
                 var _this = this;
-                $.ajax({
-                    url: engage.model.Ressource.CLOUD_DATA_REQUEST,
-                    dataType: 'json',
-                    complete: function (data) {
-                        return _this.handleDataLoaded(data);
-                    },
-                    error: function (xhr, status, error) {
-                        return _this.handleDataError(xhr, status, error);
-                    },
-                    progress: function (evt) {
-                        return _this.handleDataProgress(evt);
-                    }
-                });
+                var setting = {};
+                setting.url = url;
+                setting.dataType = "json";
+                setting.success = function (data) {
+                    return _this.handleDataSuccess(data);
+                };
+                setting.error = function (xhr, status, error) {
+                    return _this.handleDataError(xhr, status, error);
+                };
+                $.ajax(setting);
             };
-            BaseDataManager.prototype.handleDataProgress = function (evt) {
-                this.onProgress.dispatch(evt);
-            };
+
             BaseDataManager.prototype.handleDataError = function (xhr, status, error) {
-                //alert(status);
+                this.onError.dispatch(this._loadFromWeb, status, error);
             };
-            BaseDataManager.prototype.handleDataLoaded = function (xhr) {
-                this.data = xhr.responseJSON;
+
+            BaseDataManager.prototype.handleDataSuccess = function (data) {
+                this.data = data;
                 this.resolve();
                 this.finalize();
                 this.onComplete.dispatch();
             };
+
             BaseDataManager.prototype.resolve = function () {
                 var l = this.tables.length;
                 for (var i = 0; i < l; ++i) {
@@ -2959,7 +2970,7 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.load();
+                this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
@@ -5289,7 +5300,18 @@ var engage;
             }
 
             _super.call(this, wrapper);
+
+            this.manager.onError.add(this.onErrorLoadData, this);
         }
+        MobileApplication.prototype.onErrorLoadData = function (loadFromWeb, status, error) {
+            if (loadFromWeb)
+                this.manager.loadFromDisk();
+else {
+                //TODO: some user notification like, ERROR LOADING DATA
+                alert("Sorry error loading data.");
+            }
+        };
+
         MobileApplication.prototype.handleComplete = function () {
             $("body").addClass("map");
             _super.prototype.handleComplete.call(this);

@@ -2005,6 +2005,25 @@ img.leaflet-tile {
 	left:auto;
 	right:10px;	
 }
+
+.e5_slideshow_container .e5_slideshow_control {
+    display: block;
+}
+
+.e5-slider-thumb {
+    height: 30px;
+    margin-top: -15px;
+}
+
+.e5-slider-thumb:after {
+    content:" ";
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:40px;
+    margin-left:-20px;
+    left:50%;
+}
 .menu{
     position: fixed;
     width: 100%;
