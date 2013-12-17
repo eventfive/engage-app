@@ -3764,6 +3764,10 @@ var engage;
                 //$("body").keyup(() => this.printBounds());
             };
 
+            MapHandler.prototype.getMap = function () {
+                return this._map;
+            };
+
             MapHandler.prototype.printBounds = function () {
                 var bnds = this._map.getBounds();
                 var southWest = bnds.getSouthWest();
@@ -3922,6 +3926,9 @@ var engage;
                 $(".filter_header", this.wrapper).click(function () {
                     self.handleClickHeader($(this));
                 });
+                $(".filter_expander", this.wrapper).click(function () {
+                    self.handleClickExpander($(this));
+                });
                 this._clear.click(function () {
                     return _this.handleClickClear();
                 });
@@ -3964,6 +3971,10 @@ var engage;
                 this.app.mapHandler.resize();
             };
 
+            FilterList.prototype.handleClickExpander = function (filter_expander) {
+                $(".filter", this.wrapper).toggleClass("collapsed");
+            };
+
             FilterList.prototype.handleFilterApplied = function () {
                 var filter = this.app.filterHandler;
                 this._clear.toggleClass("visible", filter.search != "");
@@ -3988,7 +3999,8 @@ var engage;
                 //TODO put in title
                 var uncheck_btn = "<div class='uncheck_btn'></div>";
 
-                var res = "<div class='filter'>";
+                var res = "<div class='filter collapsed'>";
+                res += "<div class='filter_expander'></div>";
                 res += '<div class="search_container"><input class="search_box" placeholder="SEARCH..." maxlength ="30" /><div class="search_icon"></div><div class="clear_btn"></div></div>';
                 res += "<div class='filter_header'>" + m.label("filter_title") + "</div>";
                 res += "<div class='filter_list'>";
@@ -4173,12 +4185,17 @@ var engage;
                 this._scrollIntoPaddingRight = 15;
                 this._lockSorting = false;
                 this._missedSorting = false;
+                this._sortEnabled = true;
                 this.create();
                 this.wrapper.bind("mouseenter", function () {
                     return _this.handleMouseEnterWrapper();
                 });
                 this.wrapper.bind("mouseleave", function () {
                     return _this.handleMouseLeaveWrapper();
+                });
+                var self = this;
+                $(".list_expander", this.wrapper).click(function () {
+                    self.handleClickExpander($(this));
                 });
                 this.content.scroll(function () {
                     return _this.scrollChange();
@@ -4192,8 +4209,15 @@ var engage;
                 this.app.filterHandler.onFilterApplied.add(this.scrollChange, this);
             }
             ProjectList.prototype.create = function () {
+                //for engage-app
+                this.wrapper.addClass("collapsed");
+
                 this.content = $("<div class='project_list'></div>");
                 this.wrapper.append(this.content);
+                var shadow = $("<div class='shadow'></div>");
+                this.wrapper.append(shadow);
+                var list_expander = $("<div class='list_expander'></div>");
+                this.wrapper.append(list_expander);
                 this._prevBtn = $("<div class='navi_btn prev'></div>");
                 this.wrapper.append(this._prevBtn);
                 this._nextBtn = $("<div class='navi_btn next'></div>");
@@ -4205,6 +4229,10 @@ var engage;
                     var bp = best_practices[i];
                     var item = new engage.map.ProjectListItem(this.app, this.content, bp);
                 }
+            };
+
+            ProjectList.prototype.handleClickExpander = function (list_expander) {
+                this.wrapper.toggleClass("collapsed");
             };
 
             ProjectList.prototype.handleClickPrev = function () {
@@ -4235,6 +4263,8 @@ var engage;
             };
 
             ProjectList.prototype.handleMouseLeaveWrapper = function () {
+                if (!this._sortEnabled)
+                    return;
                 this._lockSorting = false;
                 if (this._missedSorting) {
                     this.sort();
@@ -4278,6 +4308,21 @@ else
                 this.scrollChange();
             };
 
+            ProjectList.prototype.getSortEnabled = function () {
+                return this._sortEnabled;
+            };
+
+            ProjectList.prototype.setSortEnabled = function (value) {
+                if (this._sortEnabled == value)
+                    return;
+                this._sortEnabled = value;
+
+                if (!this._sortEnabled)
+                    $(".bp_item", this.content).sortElements(this.sortByName);
+else
+                    $(".bp_item", this.content).sortElements(this.sortItems);
+            };
+
             ProjectList.prototype.sort = function () {
                 if (this._lockSorting) {
                     this._missedSorting = true;
@@ -4295,6 +4340,12 @@ else
                     return bpA.inMapBounds ? -1 : 1;
                 if (bpA.itemOrder != bpB.itemOrder)
                     return bpA.itemOrder - bpB.itemOrder;
+                return bpA.title.localeCompare(bpB.title);
+            };
+
+            ProjectList.prototype.sortByName = function (a, b) {
+                var bpA = $(a).data("best_practice");
+                var bpB = $(b).data("best_practice");
                 return bpA.title.localeCompare(bpB.title);
             };
             return ProjectList;
@@ -5114,7 +5165,6 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
-                    console.log("ASSET DIR", engage.model.Ressource.ASSET_PATH);
                     var imgURL = engage.model.Ressource.ASSET_PATH + "/" + menu[i].icon_url;
                     item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="' + imgURL + '"/></div>');
                     this.container.append(item);
@@ -5230,6 +5280,9 @@ var engage;
             $("body").addClass("map");
             _super.prototype.handleComplete.call(this);
             $("body").removeClass("map");
+
+            this.mapHandler.getMap().touchZoom.enable();
+            this.projectList.setSortEnabled(false);
 
             var page_container = $("<div class='page_container'></div>");
             $("#content").append(page_container);
