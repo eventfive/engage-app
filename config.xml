@@ -22,6 +22,7 @@
         <!-- <preference name="fullscreen" value="false" /> -->
         <!-- <preference name="orientation" value="portrait" /> -->
         <!-- <preference name="android-minSdkVersion" value="12" /> -->
+        <preference name="exit-on-suspend" value="false" />
 
         <gap:splash src="splash.png" />
         <!-- <preference name="auto-hide-splash-screen" value="false" /> -->
