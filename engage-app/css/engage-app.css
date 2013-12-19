@@ -2141,6 +2141,16 @@ img.leaflet-tile {
 .e5_slideshow_control {
 	z-index:auto;
 }
+
+.e5_slideshow_content:after{
+	content:" ";
+	position:absolute;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0;
+	/* background-color:#FF00FF; */
+}
 .menu{
     position: fixed;
     width: 100%;

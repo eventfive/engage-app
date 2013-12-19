@@ -5352,6 +5352,11 @@ else {
 
         MobileApplication.prototype.handleComplete = function () {
             var _this = this;
+            document.addEventListener("backbutton", function (e) {
+                e.preventDefault();
+                navigator["app"].exitApp();
+            }, false);
+
             $("body").addClass("map");
             _super.prototype.handleComplete.call(this);
             $("body").removeClass("map");
