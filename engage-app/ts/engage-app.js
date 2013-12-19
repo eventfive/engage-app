@@ -296,6 +296,7 @@ var e5;
     (function (core) {
         var Slot = (function () {
             function Slot(signal, listener, context) {
+                this.once = false;
                 this._enabled = true;
                 this._signal = signal;
                 this._listener = listener;
@@ -372,15 +373,24 @@ var e5;
 
                 var l = this._slots.length;
                 var slot;
-                var stopsBubbling = false;
                 for (var i = 0; i < l; ++i) {
                     slot = this._slots[i];
                     if (!slot.getEnabled())
                         continue;
                     var res = slot.execute(this, args);
-                    if (!res)
-                        stopsBubbling = true;
+                    if (slot.once) {
+                        this._slots.splice(i, 1);
+                        --l;
+                        --i;
+                    }
                 }
+            };
+
+            Signal.prototype.once = function (listener, context) {
+                if (typeof context === "undefined") { context = null; }
+                var sl = this.add(listener);
+                sl.once = true;
+                return sl;
             };
 
             Signal.prototype.add = function (listener, context) {
@@ -2379,8 +2389,8 @@ var e5;
             };
 
             Slideshow.prototype.updateSizes = function () {
-                this.frameWidth = this.wrapper.width();
-                this.frameHeight = this.wrapper.height();
+                this.frameWidth = Math.min(this.wrapper.width(), $(window).width());
+                this.frameHeight = Math.min(this.wrapper.height(), Math.max($(window).height() - 60, 0));
 
                 var maxContentWidth = this.frameWidth - (this._containerPadding * 2);
                 var maxContentHeight = this.frameHeight - (this._containerPadding * 2);
@@ -2643,7 +2653,8 @@ else
             };
 
             ImageElement.prototype.handleImageLoaded = function (evt) {
-                $("body").append(this.element);
+                if (e5.core.Caps.isMSIE)
+                    $("body").append(this.element);
                 this.contentWidth = this.image.width;
                 this.contentHeight = this.image.height;
                 $(this.image).remove();
@@ -3271,6 +3282,8 @@ var engage;
 
                 var st = this.search.toLowerCase();
 
+                var filterCount = 0;
+
                 for (var i = 0; i < l; ++i) {
                     var bp = best_practices[i];
 
@@ -3287,10 +3300,16 @@ var engage;
                     if (isFiltered && this.search)
                         isFiltered = bp.searchString.indexOf(st) >= 0;
 
+                    if (isFiltered)
+                        filterCount++;
+
                     var m = bp.filters.length;
                     for (var j = 0; j < m; ++j)
                         bp.filters[j].setFiltered(isFiltered);
                 }
+
+                //if no bestPractice results, set/unset the no_filter_results class on the project list
+                $("body").toggleClass("no_filter_results", filterCount == 0);
 
                 this.onFilterApplied.dispatch();
             };
@@ -4453,7 +4472,13 @@ var engage;
             };
 
             MiniMap.prototype.resize = function () {
-                this.map.invalidateSize();
+                this.map.invalidateSize(false);
+                this._baseLayer.redraw();
+                //TODO: leaflet invalidate renderer
+                //            console.log(this.map);
+                //            var z = this.map.getZoom();
+                //            this.map.setZoom(++z);
+                //            this.map.setZoom(--z);
             };
 
             MiniMap.prototype.centerPosition = function (value) {
@@ -4539,6 +4564,7 @@ var engage;
                 this._defaultDocumentTitle = "ENGAGE - Best Practice";
                 this._data = null;
                 this._isOpen = false;
+                this.onPreviewOpen = new e5.core.Signal();
                 this.wrapper.addClass("closed");
                 this.create();
 
@@ -4563,6 +4589,9 @@ var engage;
                 this._history.onHashChange.add(this.handleHashChange, this);
                 this.app.projectList.onChangeItemPositions.add(this.handleChangeProjectList, this);
             }
+            ProjectPreview.prototype.getIsOpen = function () {
+                return this._isOpen;
+            };
             ProjectPreview.prototype.handleHashChange = function () {
                 var hash = this._history.getHash();
                 if (!hash || hash == "home") {
@@ -4710,6 +4739,7 @@ else
                     this._data = null;
                 }
                 this._isOpen = false;
+                this._slideshow.displayState("normal");
 
                 this._history.setHash("");
                 this.updateDocumentTitle();
@@ -4762,6 +4792,7 @@ else
                     this.scrollIn();
 
                 this.setDescription();
+                this.onPreviewOpen.dispatch();
             };
 
             ProjectPreview.prototype.setDescription = function () {
@@ -5200,6 +5231,12 @@ var engage;
                     return;
                 this.selectItem(item);
             };
+            MenuHandler.prototype.setSelectedMap = function () {
+                var item = $("[data-type='map']");
+                if (!item || this.selectedItem == item)
+                    return;
+                this.selectItem(item);
+            };
             MenuHandler.prototype.setSelectedPage = function (key) {
                 var item = $("[data-type='page'][data-key='" + key + "']");
                 if (!item || this.selectedItem == item)
@@ -5260,6 +5297,7 @@ var engage;
                     this.mediaSlide.load(this.app.manager.getPageByKey(this._key).media);
                 this.title.text(this.app.manager.label("page_title_" + this._key));
                 this.text.html(this.app.manager.label("page_text_" + this._key));
+                this.container.scrollTop();
             };
             PageHandler.prototype.handleClickItem = function (item) {
                 var lang = item.attr("data-lang");
@@ -5313,6 +5351,7 @@ else {
         };
 
         MobileApplication.prototype.handleComplete = function () {
+            var _this = this;
             $("body").addClass("map");
             _super.prototype.handleComplete.call(this);
             $("body").removeClass("map");
@@ -5328,24 +5367,48 @@ else {
             $("body").append(menu_container);
             this.menu = new engage.menu.MenuHandler(this, menu_container);
 
-            this.menu.setSelectedPage("about");
+            this.closeProjectPreview = $("<div class='close_project_preview'></div>");
+            $("#content").append(this.closeProjectPreview);
+            this.closeProjectPreview.bind("click", function () {
+                _this.handleCloseProjektPreview();
+            });
+            this.projectPreview.onPreviewOpen.add(this.handlePreviewOpen, this);
 
             var self = this;
             $("body").on('click', 'a', function (e) {
                 self.handleClickLink($(this), e);
             });
+
+            //this.menu.setSelectedPage("about");
+            this.menu.setSelectedMap();
+            if (this.projectPreview.getIsOpen())
+                this.handlePreviewOpen();
         };
 
         MobileApplication.prototype.openMap = function () {
+            if (this.projectPreview.getIsOpen())
+                this.closeProjectPreview.show();
+else
+                this.closeProjectPreview.hide();
             $("body").addClass("map");
         };
         MobileApplication.prototype.openPage = function (key) {
+            this.closeProjectPreview.hide();
             $("body").removeClass("map");
             this.page.load(key);
         };
         MobileApplication.prototype.handleClickLink = function (link, e) {
             window.open(link.attr("href"), '_system');
             e.preventDefault();
+        };
+        MobileApplication.prototype.handleCloseProjektPreview = function () {
+            this.projectPreview.close();
+            this.closeProjectPreview.hide();
+            $("body").removeClass("preview_open");
+        };
+        MobileApplication.prototype.handlePreviewOpen = function () {
+            this.closeProjectPreview.show();
+            $("body").addClass("preview_open");
         };
         return MobileApplication;
     })(engage.Application);
