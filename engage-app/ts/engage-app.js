@@ -2391,7 +2391,7 @@ var e5;
             };
 
             Slideshow.prototype.updateSizes = function () {
-                this.frameWidth = Math.min(this.wrapper.width(), $(window).width() - 10);
+                this.frameWidth = Math.min(this.wrapper.width(), $(window).width() - (this._containerPadding * 2));
                 this.frameHeight = Math.min(this.wrapper.height(), Math.max($(window).height() - 60, 0));
 
                 var maxContentWidth = this.frameWidth - (this._containerPadding * 2);
