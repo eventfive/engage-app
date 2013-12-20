@@ -517,6 +517,8 @@ video.e5_slideshow_media {
 .leaflet-container {
 	background: #ddd;
 	outline: 0;
+	/* added by joeran  */
+	height: 100%;
 }
 
 .leaflet-container a {
@@ -882,6 +884,11 @@ video.e5_slideshow_media {
 .marker-cluster span {
 	line-height: 30px;
 }
+html {
+	padding: 0;
+	margin: 0;
+}
+
 body {
 	padding: 0;
 	margin: 0;
@@ -1870,7 +1877,7 @@ html,body {
 	bottom: 0px;
 	height: auto;
 	border-bottom: none;
-	z-index:1;
+	/* z-index:1; */
 }
 
 .e5map .list_container {
@@ -1883,14 +1890,14 @@ html,body {
 	bottom: 45px;
 	height: auto;
 	background-color: #FFFFFF;
-	z-index:2;
+	/* z-index:2; */
 }
 
 .e5map .list_container .project_list {
 	overflow-x: hidden;
 	overflow-y: scroll;
 	padding: 10px 10px 0 10px;
-	z-index:3;
+	/* z-index:3; */
 }
 
 .e5map .list_container .shadow {
@@ -2035,8 +2042,8 @@ html,body {
 }
 
 #content {
+	position: fixed;
 	height: auto;
-	position: absolute;
 	left: 0;
 	right: 0;
 	top: 0;
@@ -2151,13 +2158,18 @@ img.leaflet-tile {
 	left:0;
 	/* background-color:#FF00FF; */
 }
+
+.e5slideshow_kill_overflow .e5map .project_preview {
+	-webkit-overflow-scrolling: auto;
+}
+
 .menu{
     position: fixed;
     width: 100%;
     height: 45px;
     bottom: 0;
     display: table;
-    /* z-index: 2000; */
+    /* z-index: 2; */
 }
 .menu_item{
 	position:relative;
@@ -2206,7 +2218,7 @@ img.leaflet-tile {
     font-family: Sanuk-Bold,"Lucida Sans Unicode";
     font-weight: normal;
     font-size: 30px;
-    line-height: 21px;
+    line-height: 28px;
     margin-bottom: 8px;
     padding: 0 15px 8px;
 }

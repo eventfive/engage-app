@@ -2329,6 +2329,8 @@ var e5;
                 this._hideTime = 0.3;
                 this._showTime = 0.3;
                 this._layoutTime = 0.3;
+                this._appendToBody = false;
+                this._holder = null;
                 this._displayState = "normal";
                 this.wrapper.addClass("e5_slideshow");
                 this.wrapper.attr("tabindex", 0);
@@ -2389,7 +2391,7 @@ var e5;
             };
 
             Slideshow.prototype.updateSizes = function () {
-                this.frameWidth = Math.min(this.wrapper.width(), $(window).width());
+                this.frameWidth = Math.min(this.wrapper.width(), $(window).width() - 10);
                 this.frameHeight = Math.min(this.wrapper.height(), Math.max($(window).height() - 60, 0));
 
                 var maxContentWidth = this.frameWidth - (this._containerPadding * 2);
@@ -2438,13 +2440,24 @@ else
                 if (this._displayState == state)
                     return;
                 this._displayState = state;
+                this.refreshDisplayState();
+            };
+
+            Slideshow.prototype.refreshDisplayState = function () {
                 if (this._displayState == "fullscreen") {
+                    this._holder = this.wrapper.parent();
+                    if (this._appendToBody) {
+                        $("body").append(this.wrapper);
+                    }
                     $("body").addClass("e5slideshow_kill_overflow");
                     this.wrapper.addClass("full");
                     this.resize();
                 } else if (this._displayState == "normal") {
                     $("body").removeClass("e5slideshow_kill_overflow");
                     this.wrapper.removeClass("full");
+                    if (this._appendToBody && this._holder) {
+                        this._holder.prepend(this.wrapper);
+                    }
                     this.resize();
                 }
             };
@@ -2555,6 +2568,15 @@ else
                 TweenMax.to(this._container, time, tween);
                 if (this._current)
                     this._current.resize();
+            };
+
+            Slideshow.prototype.appendToBody = function (append) {
+                if (arguments.length == 0)
+                    return this._appendToBody;
+                if (this._appendToBody == append)
+                    return;
+                this._appendToBody = append;
+                this.refreshDisplayState();
             };
 
             Slideshow.prototype.show = function (onComplete) {
@@ -4592,6 +4614,10 @@ var engage;
             ProjectPreview.prototype.getIsOpen = function () {
                 return this._isOpen;
             };
+
+            ProjectPreview.prototype.getSlideshow = function () {
+                return this._slideshow;
+            };
             ProjectPreview.prototype.handleHashChange = function () {
                 var hash = this._history.getHash();
                 if (!hash || hash == "home") {
@@ -5352,13 +5378,16 @@ else {
 
         MobileApplication.prototype.handleComplete = function () {
             var _this = this;
-            //            document.addEventListener("backbutton", function(e) {
-            //                e.preventDefault();
-            //                navigator["app"].exitApp();
-            //            }, false);
+            document.addEventListener("backbutton", function (e) {
+                e.preventDefault();
+                navigator["app"].exitApp();
+            }, false);
+
             $("body").addClass("map");
             _super.prototype.handleComplete.call(this);
             $("body").removeClass("map");
+
+            this.projectPreview.getSlideshow().appendToBody(true);
 
             this.mapHandler.getMap().touchZoom.enable();
             this.projectList.setSortEnabled(false);
