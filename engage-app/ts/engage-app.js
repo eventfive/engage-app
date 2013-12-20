@@ -5416,6 +5416,24 @@ else {
             this.menu.setSelectedMap();
             if (this.projectPreview.getIsOpen())
                 this.handlePreviewOpen();
+
+            //TODO: dirty hack
+            $(window).bind("keyboardresize", function () {
+                $("body").scrollTop(0);
+            });
+            this._wid = $("#content").width();
+            this._hei = $("#content").height();
+            e5.core.Player.setEnabled(true);
+            e5.core.Player.onTick.add(this.handleTick, this);
+        };
+
+        MobileApplication.prototype.handleTick = function () {
+            var win = $("#content");
+            if (win.width() != this._wid || win.height() != this._hei) {
+                this._wid = win.width();
+                this._hei = win.height();
+                $(window).trigger("keyboardresize");
+            }
         };
 
         MobileApplication.prototype.openMap = function () {
