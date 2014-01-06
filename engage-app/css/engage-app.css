@@ -1921,6 +1921,18 @@ html,body {
 	width: 200px;
 }
 
+.e5map .list_container .bp_item.out_of_view:hover {
+    opacity: 0.4;
+}
+
+.e5map .list_container .bp_item:hover .title {
+    background-color: rgba(4, 82, 104, 0.7);
+}
+
+.e5map .list_container .bp_item.out_of_view:hover .bp_background:after {
+    background-image: none;
+}
+
 #map_holder {
 	/* display: none; */
 	opacity: 0;
@@ -2378,4 +2390,10 @@ iframe{
 
 .e5map .filter.collapsed .filter_expander {
 	background-image: url(../assets/filter.png);
+}
+.e5map .filter .search_box {
+    max-height: 40px;
+    -webkit-appearance: none;
+    border-radius: 0;
+    padding: 0 0 2px 33px;
 }
