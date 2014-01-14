@@ -5347,6 +5347,9 @@ var engage;
     var MobileApplication = (function (_super) {
         __extends(MobileApplication, _super);
         function MobileApplication(wrapper) {
+        	
+        	$.support.cors = true;
+        	
             var publishType = engage.model.PublishType.RELEASE;
 
             if (publishType == engage.model.PublishType.RELEASE) {
