@@ -5442,6 +5442,9 @@ var engage;
                 options.fileKey = "file";
                 options.fileName = imagURI.substr(imagURI.lastIndexOf('/') + 1); // + '.png';
                 options.mimeType = "image/jpeg";
+                options.headers = {
+                    Connection: "close"
+                };
 
                 var params = new Object();
                 params.value1 = "test";
