@@ -2218,10 +2218,10 @@ img.leaflet-tile {
 .menu_item.selected{
     background: url(../assets/menu-bg-selected.png);
 }
-.map .page_container{
+.page_container{
     display: none;
 }
-.page_container{
+.page .page_container{
     display: block;
     background: #fff;
     position: absolute;
@@ -2233,6 +2233,7 @@ img.leaflet-tile {
     font-family: Unit-Light,"Lucida Sans Unicode";
     font-size: 14px;
     line-height: 21px;
+    min-width:100%;
 }
 .page_container p{
     color: #000000;
@@ -2396,4 +2397,22 @@ iframe{
     -webkit-appearance: none;
     border-radius: 0;
     padding: 0 0 2px 33px;
+}
+.people_container {
+	display: none;
+}
+
+.people .people_container {
+	display: block;
+	background-color: #FFFFFF;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+}
+
+.people_container .take_image {
+	background-color: #FF00FF;
+	padding: 10px;
+	display:inline-block;
 }

@@ -6,7 +6,7 @@ var engage;
             }
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
             Ressource.MEDIA_PATH = "/assets/best_practices/";
-            Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+            Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
             return Ressource;
         })();
@@ -494,8 +494,8 @@ var e5;
                 e5.core.Player.onTick.dispatch();
             };
 
-            Ticker.create = //source: http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-            function () {
+            //source: http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+            Ticker.create = function () {
                 var lastTime = 0;
                 var vendors = ['webkit', 'moz'];
                 for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
@@ -572,8 +572,7 @@ var e5;
                 "September",
                 "October",
                 "November",
-                "December"
-            ];
+                "December"];
             return Text;
         })();
         text.Text = Text;
@@ -773,7 +772,7 @@ var e5;
                     this.getActionArea().bind("mousedown", function (e) {
                         _this.handleMouseDown(e);
                     });
-else
+                else
                     this.getActionArea().unbind("mousedown");
             };
 
@@ -790,7 +789,7 @@ else
                     this.getActionArea().bind("mousewheel DOMMouseScroll", function (e) {
                         _this.handleMouseWheel(e);
                     });
-else
+                else
                     this.getActionArea().unbind("mousewheel DOMMouseScroll");
             };
 
@@ -828,7 +827,7 @@ else
                 });
                 $(window).one("mouseup." + this.namespace, function (e) {
                     return _this.handleMouseUp(e);
-                });
+                }); //mouseleave
             };
 
             Interactor.prototype.handleMouseMove = function (e) {
@@ -838,7 +837,7 @@ else
             };
 
             Interactor.prototype.handleMouseUp = function (e) {
-                $(window).unbind("mousemove." + this.namespace);
+                $(window).unbind("mousemove." + this.namespace); // mouseup blur, mouseleave
                 this._handleActionEnd(this._pageX, this._pageY, e.target, e.currentTarget);
             };
 
@@ -1023,7 +1022,7 @@ var e5;
                 if (isNaN(this._minLocalX)) {
                     if (this._keepInBounds)
                         return 0;
-else
+                    else
                         return -10000000;
                 }
                 return this._minLocalX;
@@ -1060,7 +1059,7 @@ else
                 if (isNaN(this._minLocalY)) {
                     if (this._keepInBounds)
                         return 0;
-else
+                    else
                         return -10000000;
                 }
                 return this._minLocalY;
@@ -1238,7 +1237,7 @@ var e5;
                 var resTop = this._scrollTop;
                 if (pgY < 0)
                     resTop = element.offsetTop - tar.position().top;
-else if (pgY + hei > availHei)
+                else if (pgY + hei > availHei)
                     resTop = element.offsetTop - (availHei - hei + tar.position().top);
                 this.tweenToTop(resTop, time);
                 //TO-DO: correct the calculations
@@ -1395,6 +1394,7 @@ else if (pgY + hei > availHei)
                 var lastValue = this._scrollLeft;
                 this._scrollLeft = value;
 
+                //if (this._horizontal && this._scrollerMode)
                 if (this._scrollerMode)
                     this._scrollerMode.scrollLeft(this, this._scrollLeft);
                 this.onScrollLeft.dispatch(this._scrollLeft, lastValue);
@@ -1412,6 +1412,7 @@ else if (pgY + hei > availHei)
                 var lastValue = this._scrollTop;
                 this._scrollTop = value;
 
+                //if (this._vertical && this._scrollerMode)
                 if (this._scrollerMode)
                     this._scrollerMode.scrollTop(this, this._scrollTop);
                 this.onScrollTop.dispatch(this._scrollTop, lastValue);
@@ -1480,7 +1481,7 @@ else if (pgY + hei > availHei)
 
                 if (this._vertical)
                     this.tweenToTop(this._scrollTop + delta * this.getMouseWheelSpeed(), this._mouseWheelTime);
-else if (this._horizontal)
+                else if (this._horizontal)
                     this.tweenToLeft(this._scrollLeft + delta * this.getMouseWheelSpeed(), this._mouseWheelTime);
             };
 
@@ -1746,7 +1747,7 @@ var e5;
                 this._pagingVertical = value;
                 if (this._pagingVertical)
                     this.onScrollTop.add(this.checkPageVertical, this);
-else
+                else
                     this.onScrollTop.remove(this.checkPageVertical);
             };
 
@@ -1760,7 +1761,7 @@ else
                 this._pagingHorizontal = value;
                 if (this._pagingHorizontal)
                     this.onScrollLeft.add(this.checkPageHorizontal, this);
-else
+                else
                     this.onScrollLeft.remove(this.checkPageHorizontal);
             };
 
@@ -1804,7 +1805,7 @@ else
                         TweenMax.to(this, 0.7, {
                             setScrollTop: this.getPageVertical() * this.getPageHeight()
                         });
-else
+                    else
                         TweenMax.to(this, 0.7, {
                             setScrollTop: this.getDeltaY() > 0 ? this.getPreviousPageTop() : this.getNextPageTop()
                         });
@@ -2232,7 +2233,7 @@ var e5;
                 if (this.list[0].scrollHeight == this.list.outerHeight()) {
                     if (document.documentElement)
                         target = document.documentElement;
-else
+                    else
                         target = document.body;
                 }
 
@@ -2298,7 +2299,7 @@ else
                     var localTop = offsetTop - (website.offset().top - windowScrollTop);
                     if (localTop < localTopMin)
                         localTop = localTopMin;
-else if (localTop > localTopMax)
+                    else if (localTop > localTopMax)
                         localTop = localTopMax;
 
                     icon.css("top", "" + Math.round(localTop) + "px");
@@ -2421,16 +2422,16 @@ var e5;
             Slideshow.prototype.handleKeyUp = function (evt) {
                 if (evt.keyCode == 37)
                     this.prev();
-else if (evt.keyCode == 39)
+                else if (evt.keyCode == 39)
                     this.next();
-else if (evt.keyCode == 27)
+                else if (evt.keyCode == 27)
                     this.displayState("normal");
             };
 
             Slideshow.prototype.toggleFullscreen = function () {
                 if (this._displayState == "fullscreen")
                     this.displayState("normal");
-else
+                else
                     this.displayState("fullscreen");
             };
 
@@ -2482,7 +2483,7 @@ else
 
                 if (value < 0)
                     value = l - 1;
-else if (value > (l - 1))
+                else if (value > (l - 1))
                     value = 0;
                 this._index = value;
 
@@ -2535,7 +2536,7 @@ else if (value > (l - 1))
             Slideshow.prototype.onCompleteHide = function () {
                 if (this._current.onReady.getDispatched())
                     this.onReadyItem();
-else
+                else
                     this._current.onReady.add(this.onReadyItem, this);
             };
 
@@ -2705,11 +2706,11 @@ else
                     var type = "video/";
                     if (extension == "mp4")
                         type += "mp4";
-else if (extension == "webm")
+                    else if (extension == "webm")
                         type += "webm";
-else if (extension == "ogg")
+                    else if (extension == "ogg")
                         type += "ogg";
-else
+                    else
                         continue;
                     sources += "<source src='" + path + "' type='" + type + "' />";
                 }
@@ -2759,8 +2760,7 @@ var engage;
                     'ui_label',
                     'page',
                     'page_media',
-                    'menu'
-                ];
+                    'menu'];
                 this._loadFromWeb = true;
             }
             BaseDataManager.prototype.loadFromWeb = function () {
@@ -2778,6 +2778,7 @@ var engage;
                 var setting = {};
                 setting.url = url;
                 setting.dataType = "json";
+                setting.crossDomain = true;
                 setting.success = function (data) {
                     return _this.handleDataSuccess(data);
                 };
@@ -2822,13 +2823,13 @@ var engage;
                         var id = '';
                         if ('number' == typeof item[table])
                             id = item[table];
-else
+                        else
                             id = item[table].id;
                         if (id != sourceId)
                             continue;
                         if ('number' == typeof item.language)
                             lang = item.language;
-else
+                        else
                             lang = item.language.id;
 
                         if (lang == languageId) {
@@ -2839,7 +2840,7 @@ else
                 }
                 if (tar.de && !tar.en)
                     tar.en = tar.de;
-else if (tar.en && !tar.de)
+                else if (tar.en && !tar.de)
                     tar.de = tar.en;
                 tar.trans = tar[this.currentLanguageCode];
             };
@@ -3115,7 +3116,7 @@ var engage;
 
                     if (bp.media_preview)
                         bp.previewImagePath = bp.media_preview.path;
-else
+                    else
                         bp.previewImagePath = placeholderURL;
 
                     var descr = "";
@@ -3211,11 +3212,11 @@ else
 
                     if (bp.budget < 500000)
                         bp.budgetMask = 1;
-else if (bp.budget < 1000000)
+                    else if (bp.budget < 1000000)
                         bp.budgetMask = 2;
-else if (bp.budget < 50000000)
+                    else if (bp.budget < 50000000)
                         bp.budgetMask = 4;
-else
+                    else
                         bp.budgetMask = 8;
 
                     bp.topicMask = 0;
@@ -3287,8 +3288,7 @@ var engage;
                     "technology",
                     "influence",
                     "budget",
-                    "search"
-                ];
+                    "search"];
                 e5.core.Player.setEnabled(true);
                 e5.core.Player.onTick.add(this.checkForFilterChange, this);
 
@@ -3339,7 +3339,7 @@ var engage;
             FilterHandler.prototype.toggleFilter = function (filterPropery, filterFlag) {
                 if (this[filterPropery] & filterFlag)
                     this.unsetFilter(filterPropery, filterFlag);
-else
+                else
                     this.setFilter(filterPropery, filterFlag);
             };
 
@@ -3417,6 +3417,7 @@ var engage;
                 if (endX < 0 || startX < 0 || endX > this.wrapper.width() || startX > this.wrapper.width())
                     return;
 
+                //set the filter list opaque if the endPosition overlays it
                 if (this.app.filterList) {
                     var maxX = this.app.filterList.wrapper.width() - (this.app.filterList.filterItem.width() + 15);
                     var minY = this.app.filterList.filterItem.height() + 25;
@@ -3464,7 +3465,7 @@ var engage;
                 var line;
                 if (this._buffer.length > 0)
                     line = this._buffer.shift();
-else {
+                else {
                     line = $("<div class='line'></div>");
                     line.css("transition", "height 0.4s");
                     this.wrapper.append(line);
@@ -3657,7 +3658,7 @@ var engage;
 
                 if (this._open)
                     this.marker.setIcon(this._iconOpen);
-else
+                else
                     this.marker.setIcon(this._iconDefault);
             };
 
@@ -3672,7 +3673,7 @@ else
 
                 if (this._filtered)
                     this.layer.addLayer(this.marker);
-else
+                else
                     this.layer.removeLayer(this.marker);
                 this.data.listItem.setFiltered(this._filtered);
             };
@@ -3879,7 +3880,7 @@ var engage;
                     return;
                 if (target._zoom == zoom)
                     storage.push(target);
-else
+                else
                     for (var i = 0; i < target._childClusters.length; ++i)
                         this.walkRecursively(target._childClusters[i], storage, zoom);
             };
@@ -3894,6 +3895,7 @@ else
                     marker.setVisible(bnds.contains(marker.position));
                 }
 
+                //resort project list here
                 if (this.app.projectList)
                     this.app.projectList.sort();
             };
@@ -4095,9 +4097,9 @@ var engage;
                 //res += "<div class='filter_item' data-flag='2' data-category='budget'>500.00 - 1.000.000</div>";
                 //res += "<div class='filter_item' data-flag='4' data-category='budget'>1.000.000 - 50.000.000</div>";
                 //res += "<div class='filter_item' data-flag='8' data-category='budget'>more than 50.000.000</div>";
-                res += "</div>";
+                res += "</div>"; //end filter_list
 
-                res += "</div>";
+                res += "</div>"; //end filter
 
                 var list = $(res);
                 this.wrapper.append(list);
@@ -4115,7 +4117,7 @@ var engage;
                 this._opaque = value;
                 if (this._opaque)
                     this.filterItem.addClass("opaque");
-else
+                else
                     this.filterItem.removeClass("opaque");
             };
             return FilterList;
@@ -4190,7 +4192,7 @@ var engage;
 
                 if (this._open)
                     this.visual.addClass("checked");
-else
+                else
                     this.visual.removeClass("checked");
             };
 
@@ -4205,7 +4207,7 @@ else
 
                 if (this._filtered)
                     this.visual.removeClass("hidden");
-else
+                else
                     this.visual.addClass("hidden");
             };
 
@@ -4352,9 +4354,9 @@ var engage;
                 var xPos = item.visual.position().left;
                 if (xPos < 0)
                     this.scrollIntoLeft(item);
-else if (xPos > (this.content.width() - item.visual.width()))
+                else if (xPos > (this.content.width() - item.visual.width()))
                     this.scrollIntoRight(item);
-else
+                else
                     return;
             };
 
@@ -4380,9 +4382,10 @@ else
                     return;
                 this._sortEnabled = value;
 
+                //just resort
                 if (!this._sortEnabled)
                     $(".bp_item", this.content).sortElements(this.sortByName);
-else
+                else
                     $(".bp_item", this.content).sortElements(this.sortItems);
             };
 
@@ -4514,7 +4517,7 @@ var engage;
                     this.map.on("resize zoomend", function () {
                         return _this.handleMapResizeZoomEnd();
                     });
-else
+                else
                     this.map.off("resize zoomend");
             };
 
@@ -4581,8 +4584,7 @@ var engage;
                     "factors_for_success",
                     "factors_with_local_context",
                     "points_monitored",
-                    "conditions_for_transfer"
-                ];
+                    "conditions_for_transfer"];
                 this._defaultDocumentTitle = "ENGAGE - Best Practice";
                 this._data = null;
                 this._isOpen = false;
@@ -4684,7 +4686,7 @@ var engage;
             ProjectPreview.prototype.handleClickExpand = function () {
                 if (this.wrapper.hasClass("expanded"))
                     this.wrapper.removeClass("expanded");
-else
+                else
                     this.wrapper.addClass("expanded");
             };
 
@@ -4752,7 +4754,7 @@ else
             ProjectPreview.prototype.updateDocumentTitle = function () {
                 if (this._isOpen && this._data)
                     window.document.title = this._defaultDocumentTitle + " - " + this._data.title;
-else
+                else
                     window.document.title = this._defaultDocumentTitle;
             };
 
@@ -4854,6 +4856,8 @@ else
                 }
                 this._quick.html(q);
 
+                //if there is no description ->
+                //hide all descrition items
                 if (this._data.descriptions.length == 0) {
                     var l = this._descriptionProperties.length;
                     for (var i = 0; i < l; ++i) {
@@ -4883,8 +4887,7 @@ else
             ProjectPreview.prototype.scrollIn = function () {
                 var tw = { top: $(window).scrollTop() };
                 TweenMax.to(tw, 0.3, {
-                    top: 400,
-                    onUpdate: function () {
+                    top: 400, onUpdate: function () {
                         window.scrollTo(0, tw.top);
                     }
                 });
@@ -5019,7 +5022,7 @@ var engage;
             }
             Backend.prototype.handleComplete = function () {
                 $("body").removeClass("progress");
-                this.panel = new admin.PanelBestPractices(this);
+                this.panel = new engage.admin.PanelBestPractices(this);
             };
             return Backend;
         })();
@@ -5277,9 +5280,12 @@ var engage;
                 var type = this.selectedItem.attr("data-type");
                 if (type == "map") {
                     this.app.openMap();
-                } else {
+                } else if (type == "page") {
                     var key = this.selectedItem.attr("data-key");
                     this.app.openPage(key);
+                } else if (type == "people") {
+                    var key = this.selectedItem.attr("data-key");
+                    this.app.openPeople(key);
                 }
             };
             return MenuHandler;
@@ -5344,12 +5350,93 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
+    (function (page) {
+        var PeoplePage = (function () {
+            function PeoplePage(app) {
+                this.app = app;
+                this.init();
+            }
+            PeoplePage.prototype.init = function () {
+                var _this = this;
+                this.element = $("<div class='people_container'></div>");
+                $("#content").append(this.element);
+
+                this.btnTakeImage = $("<div class='take_image'>TAKE AN IMAGE</div>");
+                this.element.append(this.btnTakeImage);
+
+                this.camera = new engage.media.CameraUtil();
+
+                this.btnTakeImage.bind("click", function (evt) {
+                    return _this.handleClickTakeImage();
+                });
+            };
+
+            PeoplePage.prototype.handleClickTakeImage = function () {
+                this.camera.takePicture();
+            };
+            return PeoplePage;
+        })();
+        page.PeoplePage = PeoplePage;
+    })(engage.page || (engage.page = {}));
+    var page = engage.page;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (media) {
+        var CameraUtil = (function () {
+            function CameraUtil() {
+            }
+            CameraUtil.prototype.takePicture = function () {
+                var _this = this;
+                console.log("CLICK");
+                if (!navigator.camera) {
+                    console.log("No camera found on navigator");
+                    return;
+                }
+
+                console.log("Try to take a picture");
+                navigator.camera.getPicture(function (img) {
+                    return _this.onSuccess(img);
+                }, function (msg) {
+                    return _this.onFail(msg);
+                }, {
+                    quality: 20,
+                    targetWidth: 1024,
+                    targetHeight: 768,
+                    sourceType: navigator.camera.PictureSourceType.CAMERA,
+                    destinationType: navigator.camera.DestinationType.FILE_URI,
+                    encodingType: navigator.camera.EncodingType.JPEG,
+                    saveToPhotoAlbum: false,
+                    correctOrientation: true
+                });
+            };
+
+            CameraUtil.prototype.onSuccess = function (imageData) {
+                var image = $('<img></img>');
+
+                //            image.attr("src", "data:image/jpeg;base64," + imageData);
+                image.attr("src", imageData);
+                $(window).append(image);
+                console.log("take a picture success");
+            };
+
+            CameraUtil.prototype.onFail = function (message) {
+                //alert("failed: " + message);
+                console.log("take a picture failed");
+            };
+            return CameraUtil;
+        })();
+        media.CameraUtil = CameraUtil;
+    })(engage.media || (engage.media = {}));
+    var media = engage.media;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
     var MobileApplication = (function (_super) {
         __extends(MobileApplication, _super);
         function MobileApplication(wrapper) {
-        	
-        	$.support.cors = true;
-        	
+            $.support.cors = true;
+
             var publishType = engage.model.PublishType.RELEASE;
 
             if (publishType == engage.model.PublishType.RELEASE) {
@@ -5373,7 +5460,7 @@ var engage;
         MobileApplication.prototype.onErrorLoadData = function (loadFromWeb, status, error) {
             if (loadFromWeb)
                 this.manager.loadFromDisk();
-else {
+            else {
                 //TODO: some user notification like, ERROR LOADING DATA
                 alert("Sorry error loading data.");
             }
@@ -5420,6 +5507,8 @@ else {
             if (this.projectPreview.getIsOpen())
                 this.handlePreviewOpen();
 
+            this.people = new engage.page.PeoplePage(this);
+
             //TODO: dirty hack
             $(window).bind("keyboardresize", function () {
                 $("body").scrollTop(0);
@@ -5442,14 +5531,21 @@ else {
         MobileApplication.prototype.openMap = function () {
             if (this.projectPreview.getIsOpen())
                 this.closeProjectPreview.show();
-else
+            else
                 this.closeProjectPreview.hide();
+            $("body").removeClass("people page");
             $("body").addClass("map");
         };
         MobileApplication.prototype.openPage = function (key) {
             this.closeProjectPreview.hide();
-            $("body").removeClass("map");
+            $("body").removeClass("people map");
+            $("body").addClass("page");
             this.page.load(key);
+        };
+        MobileApplication.prototype.openPeople = function (key) {
+            this.closeProjectPreview.hide();
+            $("body").removeClass("map page");
+            $("body").addClass("people");
         };
         MobileApplication.prototype.handleClickLink = function (link, e) {
             window.open(link.attr("href"), '_system');
