@@ -3557,6 +3557,7 @@ var engage;
                 this._filtered = false;
                 this._hovered = false;
                 this._open = false;
+                //init static icon settings
                 if (!MapMarker._iconURLsResolved) {
                     MapMarker._iconSettingDefault.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
                     MapMarker._iconSettingOpen.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon-open.png";
@@ -5350,6 +5351,90 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
+    (function (map) {
+        var PeopleMarker = (function () {
+            function PeopleMarker(map, data) {
+                this.map = map;
+                this.data = data;
+                this.init();
+            }
+            PeopleMarker.prototype.init = function () {
+                var _iconSettingDefault = {
+                    iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png",
+                    className: "marker_icon",
+                    iconSize: new L.Point(20, 28),
+                    iconAnchor: new L.Point(9, 23)
+                };
+
+                var icon = new L.Icon(_iconSettingDefault);
+
+                this.position = new L.LatLng(51.53534, 7.760203); //53.867459, 20.702831);
+                this.marker = new L.Marker(this.position);
+                this.marker.setIcon(icon);
+                this.map.markerLayer.addLayer(this.marker);
+            };
+            return PeopleMarker;
+        })();
+        map.PeopleMarker = PeopleMarker;
+    })(engage.map || (engage.map = {}));
+    var map = engage.map;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (map) {
+        var PeopleMap = (function () {
+            function PeopleMap(app) {
+                this.app = app;
+                this.init();
+            }
+            PeopleMap.prototype.init = function () {
+                var _this = this;
+                this.element = $("<div id='people_map'></div>");
+
+                var initialPosition = new L.LatLng(51.53534, 7.760203);
+
+                //add the map layer
+                var tileLayerAttr = {
+                    attribution: ' Tiles: &copy; Esri arcgisonline.com',
+                    minZoom: 4,
+                    maxZoom: 10
+                };
+
+                this.map = new L.Map(this.element[0]);
+                this.map.setView(initialPosition, 4);
+                this.map.scrollWheelZoom.disable();
+                this.map.touchZoom.disable();
+                this.map.dragging.enabled();
+                this.map.zoomControl.removeFrom(this.map);
+
+                var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
+                this.map.setMaxBounds(maxBounds);
+
+                var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileLayerAttr);
+                this.map.addLayer(_baseLayer);
+
+                this.markerLayer = new L.LayerGroup();
+                this.map.addLayer(this.markerLayer);
+
+                $(window).bind("resize", function () {
+                    return _this.refresh();
+                });
+
+                //for test only
+                new engage.map.PeopleMarker(this, null);
+            };
+
+            PeopleMap.prototype.refresh = function () {
+                this.map.invalidateSize(false);
+            };
+            return PeopleMap;
+        })();
+        map.PeopleMap = PeopleMap;
+    })(engage.map || (engage.map = {}));
+    var map = engage.map;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
     (function (page) {
         var PeoplePage = (function () {
             function PeoplePage(app) {
@@ -5365,6 +5450,9 @@ var engage;
                 this.element.append(this.btnTakeImage);
 
                 this.camera = new engage.media.CameraUtil();
+
+                this.map = new engage.map.PeopleMap(this.app);
+                this.element.append(this.map.element);
 
                 this.btnTakeImage.bind("click", function (evt) {
                     return _this.handleClickTakeImage();
@@ -5577,6 +5665,9 @@ var engage;
             this._hei = $("#content").height();
             e5.core.Player.setEnabled(true);
             e5.core.Player.onTick.add(this.handleTick, this);
+
+            //for test only
+            this.openPeople("TEST");
         };
 
         MobileApplication.prototype.handleTick = function () {
@@ -5606,6 +5697,7 @@ var engage;
             this.closeProjectPreview.hide();
             $("body").removeClass("map page");
             $("body").addClass("people");
+            this.people.map.refresh();
         };
         MobileApplication.prototype.handleClickLink = function (link, e) {
             window.open(link.attr("href"), '_system');
