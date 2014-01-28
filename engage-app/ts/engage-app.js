@@ -5420,7 +5420,7 @@ var engage;
 
                 var image = $('<img></img>');
                 image.attr("src", imageData);
-                $(window).append(image);
+                $("body").append(image);
             };
 
             CameraUtil.prototype.onFail = function (message) {
