@@ -5369,10 +5369,22 @@ var engage;
                 this.btnTakeImage.bind("click", function (evt) {
                     return _this.handleClickTakeImage();
                 });
+
+                this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
+                this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
+            };
+
+            PeoplePage.prototype.handleCaptureSuccess = function () {
+                $("body").append(this.camera.image);
+                this.camera.upload();
+            };
+
+            PeoplePage.prototype.handleUploadSuccess = function () {
+                this.camera.image.remove();
             };
 
             PeoplePage.prototype.handleClickTakeImage = function () {
-                this.camera.takePicture();
+                this.camera.capture();
                 return false;
             };
             return PeoplePage;
@@ -5386,8 +5398,14 @@ var engage;
     (function (media) {
         var CameraUtil = (function () {
             function CameraUtil() {
+                this.onUploadSuccess = new e5.core.Signal();
+                this.onUploadError = new e5.core.Signal();
+                this.onCaptureSuccess = new e5.core.Signal();
+                this.onCaptureError = new e5.core.Signal();
+                this.image = null;
+                this.path = null;
             }
-            CameraUtil.prototype.takePicture = function () {
+            CameraUtil.prototype.capture = function () {
                 var _this = this;
                 if (!navigator.camera) {
                     $(".take_image").text("camera not found");
@@ -5396,9 +5414,9 @@ var engage;
 
                 $(".take_image").text("try taking picture");
                 navigator.camera.getPicture(function (img) {
-                    return _this.onSuccess(img);
+                    return _this.handleCaptureSuccess(img);
                 }, function (msg) {
-                    return _this.onFail(msg);
+                    return _this.handleCaptureFailed(msg);
                 }, {
                     quality: 100,
                     targetWidth: 1024,
@@ -5411,36 +5429,32 @@ var engage;
                 });
             };
 
-            CameraUtil.prototype.onSuccess = function (imagURI) {
-                //            image.attr("src", "data:image/jpeg;base64," + imageData);
-                //            image.css("position","absolute");
-                //            image.css("top","0");
-                //            image.css("left","0");
+            CameraUtil.prototype.handleCaptureSuccess = function (imagURI) {
+                this.path = imagURI;
+
                 $(".take_image").text("take a picture success" + imagURI);
 
-                var image = $('<img></img>');
-                image.css("position", "absolute");
-                image.css("top", "0");
-                image.css("left", "0");
-                image.attr("src", imagURI);
+                this.image = $('<img></img>');
+                this.image.css("position", "absolute");
+                this.image.css("top", "0");
+                this.image.css("left", "0");
+                this.image.attr("src", imagURI);
 
-                //            $("body").append(image);
-                //            var tst = $('<div></div>');
-                //            tst.css("top", "0");
-                //            tst.css("left", "0");
-                //            tst.css("width", "300px");
-                //            tst.css("height", "300px");
-                //            tst.css("position", "absolute");
-                //       ("background-color", "#FFFF00");
-                //            $("body").ap
-                this.upload(imagURI);
+                this.onCaptureSuccess.dispatch();
             };
 
-            CameraUtil.prototype.upload = function (imagURI) {
+            CameraUtil.prototype.handleCaptureFailed = function (message) {
+                $(".take_image").text("take a picture failed");
+                this.onCaptureError.dispatch(this.path, message);
+            };
+
+            CameraUtil.prototype.upload = function () {
                 var _this = this;
+                var imageURI = this.path;
+
                 var options = new FileUploadOptions();
                 options.fileKey = "file";
-                options.fileName = imagURI.substr(imagURI.lastIndexOf('/') + 1); // + '.png';
+                options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
                 options.mimeType = "image/jpeg";
                 options.headers = {
                     Connection: "close"
@@ -5454,31 +5468,21 @@ var engage;
                 options.chunkedMode = false;
 
                 var ft = new FileTransfer();
-                ft.upload(imagURI, encodeURI("http://192.168.1.26/upload.php"), function (r) {
-                    return _this.onUploadComplete(r);
+                ft.upload(imageURI, encodeURI("http://192.168.1.26/upload.php"), function (r) {
+                    return _this.handleUploadSuccess(r);
                 }, function (r) {
-                    return _this.onUploadFail(r);
+                    return _this.handleUploadFailed(r);
                 }, options);
             };
 
-            CameraUtil.prototype.onUploadComplete = function (r) {
-                //            console.log("Code = " + r.responseCode);
-                //            console.log("Response = " + r.response);
-                //            console.log("Sent = " + r.bytesSent);
+            CameraUtil.prototype.handleUploadSuccess = function (r) {
                 $(".take_image").text("UPLOAD COMPLETE" + r.response);
+                this.onUploadSuccess.dispatch();
             };
 
-            CameraUtil.prototype.onUploadFail = function (r) {
-                //            console.log("Code = " + r.responseCode);
-                //            console.log("Response = " + r.response);
-                //            console.log("Sent = " + r.bytesSent);
+            CameraUtil.prototype.handleUploadFailed = function (r) {
                 $(".take_image").text("UPLOAD FAILED" + r.response);
-            };
-
-            CameraUtil.prototype.onFail = function (message) {
-                //alert("failed: " + message);
-                //            alert("take a picture failed");
-                $(".take_image").text("take a picture failed");
+                this.onUploadError.dispatch(this.path, r.response);
             };
             return CameraUtil;
         })();
