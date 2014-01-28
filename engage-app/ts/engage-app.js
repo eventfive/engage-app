@@ -5388,13 +5388,12 @@ var engage;
             }
             CameraUtil.prototype.takePicture = function () {
                 var _this = this;
-                console.log("CLICK");
                 if (!navigator.camera) {
-                    console.log("No camera found on navigator");
+                    $(".take_image").text("camera not found");
                     return;
                 }
 
-                console.log("Try to take a picture");
+                $(".take_image").text("try taking picture");
                 navigator.camera.getPicture(function (img) {
                     return _this.onSuccess(img);
                 }, function (msg) {
