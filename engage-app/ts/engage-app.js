@@ -5404,7 +5404,7 @@ var engage;
                     targetWidth: 1024,
                     targetHeight: 768,
                     sourceType: navigator.camera.PictureSourceType.CAMERA,
-                    destinationType: navigator.camera.DestinationType.FILE_URI,
+                    destinationType: navigator.camera.DestinationType.DATA_URL,
                     encodingType: navigator.camera.EncodingType.JPEG,
                     saveToPhotoAlbum: false,
                     correctOrientation: true
