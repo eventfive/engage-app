@@ -5420,12 +5420,15 @@ var engage;
                 image.css("top", "0");
                 image.css("left", "0");
                 $(window).append(image);
-                alert("take a picture success");
+
+                //            alert("take a picture success");
+                $(".take_image").text("take a picture success");
             };
 
             CameraUtil.prototype.onFail = function (message) {
                 //alert("failed: " + message);
-                alert("take a picture failed");
+                //            alert("take a picture failed");
+                $(".take_image").text("take a picture failed");
             };
             return CameraUtil;
         })();
