@@ -5424,15 +5424,14 @@ var engage;
                 image.css("left", "0");
                 image.attr("src", imageData);
                 $("body").append(image);
-
-                var tst = $('<div></div>');
-                tst.css("top", "0");
-                tst.css("left", "0");
-                tst.css("width", "300px");
-                tst.css("height", "300px");
-                tst.css("position", "absolute");
-                tst.css("background-color", "#FFFF00");
-                $("body").append(tst);
+                //            var tst = $('<div></div>');
+                //            tst.css("top", "0");
+                //            tst.css("left", "0");
+                //            tst.css("width", "300px");
+                //            tst.css("height", "300px");
+                //            tst.css("position", "absolute");
+                //            tst.css("background-color", "#FFFF00");
+                //            $("body").append(tst);
             };
 
             CameraUtil.prototype.onFail = function (message) {
