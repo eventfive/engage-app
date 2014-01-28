@@ -5411,19 +5411,18 @@ var engage;
                 });
             };
 
-            CameraUtil.prototype.onSuccess = function (imageData) {
-                var _this = this;
+            CameraUtil.prototype.onSuccess = function (imagURI) {
                 //            image.attr("src", "data:image/jpeg;base64," + imageData);
                 //            image.css("position","absolute");
                 //            image.css("top","0");
                 //            image.css("left","0");
-                $(".take_image").text("take a picture success" + imageData);
+                $(".take_image").text("take a picture success" + imagURI);
 
                 var image = $('<img></img>');
                 image.css("position", "absolute");
                 image.css("top", "0");
                 image.css("left", "0");
-                image.attr("src", imageData);
+                image.attr("src", imagURI);
 
                 //            $("body").append(image);
                 //            var tst = $('<div></div>');
@@ -5433,13 +5432,27 @@ var engage;
                 //            tst.css("height", "300px");
                 //            tst.css("position", "absolute");
                 //       ("background-color", "#FFFF00");
-                //            $("body").append(tst);
+                //            $("body").ap
+                this.upload(imagURI);
+            };
+
+            CameraUtil.prototype.upload = function (imagURI) {
+                var _this = this;
+                var options = new FileUploadOptions();
+                options.fileKey = "file";
+                options.fileName = imagURI.substr(imagURI.lastIndexOf('/') + 1) + '.png';
+                options.mimeType = "text/plain";
+
+                var params = new Object();
+
+                options.params = params;
+
                 var ft = new FileTransfer();
-                ft.upload(imageData, encodeURI("http://192.168.1.26/upload.php"), function (r) {
+                ft.upload(imagURI, encodeURI("http://192.168.1.26/upload.php"), function (r) {
                     return _this.onUploadComplete(r);
                 }, function (r) {
                     return _this.onUploadFail(r);
-                });
+                }, options);
             };
 
             CameraUtil.prototype.onUploadComplete = function (r) {
