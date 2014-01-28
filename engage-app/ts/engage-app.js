@@ -5424,8 +5424,8 @@ var engage;
                 image.css("top", "0");
                 image.css("left", "0");
                 image.attr("src", imageData);
-                $("body").append(image);
 
+                //            $("body").append(image);
                 //            var tst = $('<div></div>');
                 //            tst.css("top", "0");
                 //            tst.css("left", "0");
