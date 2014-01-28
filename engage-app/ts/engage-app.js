@@ -5446,14 +5446,13 @@ var engage;
                 this.element = $("<div class='people_container'></div>");
                 $("#content").append(this.element);
 
-                this.btnTakeImage = $("<div class='take_image'>TAKE AN IMAGE</div>");
-                this.element.append(this.btnTakeImage);
-
                 this.camera = new engage.media.CameraUtil();
 
                 this.map = new engage.map.PeopleMap(this.app);
                 this.element.append(this.map.element);
 
+                this.btnTakeImage = $("<div class='take_image'>TAKE AN IMAGE</div>");
+                this.element.append(this.btnTakeImage);
                 this.btnTakeImage.bind("click", function (evt) {
                     return _this.handleClickTakeImage();
                 });
@@ -5585,7 +5584,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.RELEASE;
+            var publishType = engage.model.PublishType.DEBUG_AS_WEB;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
