@@ -5419,7 +5419,7 @@ var engage;
                 //            image.css("top","0");
                 //            image.css("left","0");
                 //            $(window).append(image);
-                $(".take_image").text("take a picture success");
+                $(".take_image").text("take a picture success" + imageData);
             };
 
             CameraUtil.prototype.onFail = function (message) {
