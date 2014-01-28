@@ -5416,13 +5416,16 @@ var engage;
 
                 //            image.attr("src", "data:image/jpeg;base64," + imageData);
                 image.attr("src", imageData);
+                image.css("position", "absolute");
+                image.css("top", "0");
+                image.css("left", "0");
                 $(window).append(image);
-                console.log("take a picture success");
+                alert("take a picture success");
             };
 
             CameraUtil.prototype.onFail = function (message) {
                 //alert("failed: " + message);
-                console.log("take a picture failed");
+                alert("take a picture failed");
             };
             return CameraUtil;
         })();
