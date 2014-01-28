@@ -5413,13 +5413,14 @@ var engage;
 
             CameraUtil.prototype.onSuccess = function (imageData) {
                 //            image.attr("src", "data:image/jpeg;base64," + imageData);
-                //            var image = $('<img></img>');
-                //            image.attr("src", imageData);
                 //            image.css("position","absolute");
                 //            image.css("top","0");
                 //            image.css("left","0");
-                //            $(window).append(image);
                 $(".take_image").text("take a picture success" + imageData);
+
+                var image = $('<img></img>');
+                image.attr("src", imageData);
+                $(window).append(image);
             };
 
             CameraUtil.prototype.onFail = function (message) {
