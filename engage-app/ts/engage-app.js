@@ -5373,6 +5373,7 @@ var engage;
 
             PeoplePage.prototype.handleClickTakeImage = function () {
                 this.camera.takePicture();
+                return false;
             };
             return PeoplePage;
         })();
