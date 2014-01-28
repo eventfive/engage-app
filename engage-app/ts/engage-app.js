@@ -3004,7 +3004,7 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.loadFromWeb();
+                this.loadFromDisk(); //this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
