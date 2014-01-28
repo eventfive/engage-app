@@ -5400,7 +5400,7 @@ var engage;
                 }, function (msg) {
                     return _this.onFail(msg);
                 }, {
-                    quality: 80,
+                    quality: 100,
                     targetWidth: 1024,
                     targetHeight: 768,
                     sourceType: navigator.camera.PictureSourceType.CAMERA,
