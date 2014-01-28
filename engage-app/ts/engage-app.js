@@ -5441,11 +5441,14 @@ var engage;
                 var options = new FileUploadOptions();
                 options.fileKey = "file";
                 options.fileName = imagURI.substr(imagURI.lastIndexOf('/') + 1); // + '.png';
-                options.mimeType = "text/plain";
+                options.mimeType = "image/jpeg";
 
                 var params = new Object();
+                params.value1 = "test";
+                params.value2 = "param";
 
                 options.params = params;
+                options.chunkedMode = false;
 
                 var ft = new FileTransfer();
                 ft.upload(imagURI, encodeURI("http://192.168.1.26/upload.php"), function (r) {
