@@ -5440,7 +5440,7 @@ var engage;
                 var _this = this;
                 var options = new FileUploadOptions();
                 options.fileKey = "file";
-                options.fileName = imagURI.substr(imagURI.lastIndexOf('/') + 1) + '.png';
+                options.fileName = imagURI.substr(imagURI.lastIndexOf('/') + 1); // + '.png';
                 options.mimeType = "text/plain";
 
                 var params = new Object();
