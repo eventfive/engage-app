@@ -323,6 +323,18 @@ video.e5_slideshow_media {
 	-ms-user-select: none;
 	user-select: none;
 }
+/*------------ framework/toast.css ------------*/
+.e5_toast
+{
+	position:fixed;
+	background-color:rgba(0,0,0,0.8);
+	z-index:100000;
+	color:#FFFFFF;
+	bottom:10%;
+	left:50%;	
+	padding:5px;
+	border-radius:2px;
+}
 /* required styles */
 .leaflet-map-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-pane,.leaflet-tile-container,.leaflet-overlay-pane,.leaflet-shadow-pane,.leaflet-marker-pane,.leaflet-popup-pane,.leaflet-overlay-pane svg,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer
 	{
@@ -2413,17 +2425,126 @@ iframe{
 
 .people_container .take_image {
 	position: absolute;
-	background-color: #FF00FF;
-	padding: 10px;
 	right: 0px;
-	display: inline-block;
+	top: 0px;
+	width: 40px;
+	height: 40px;
+	background-color: #FFFFFF;
+	background-size: 24px auto;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-image: url(../assets/people-cam.png);
+	box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+	cursor: pointer;
 }
 
 #people_map {
 	position: absolute;
-	top:0;
-	left:0;
+	top: 0;
+	left: 0;
 	width: 100%;
 	height: 100%;
 	background-color: #FFFFFF;
+}
+
+.people_marker_icon {
+	width: auto !important;
+	height: auto !important;
+	margin: 0 !important;
+	box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+}
+
+.people_marker_icon_fitzel {
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	transform: rotate(45deg);
+	background-color: #FFFFFF;
+	left: 50%;
+	top: 100%;
+	margin-left: -5px;
+	margin-top: -5px;
+	box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+}
+
+.people_marker_icon img {
+	display: block;
+	position: relative;
+	border: 3px solid #FFFFFF;
+	border-radius: 5px;
+}
+
+.people_form {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background-color: #FFFFFF;
+	z-index: 1000;
+	background-color: #FFFFFF;
+}
+
+.people_form.progress:after {
+	position: absolute;
+	content: " ";
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background-color: rgba(0,0,0,0.5);
+	z-index: 1500;
+	background-image:url(../assets/people-loader.gif);
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.people_form .abort {
+	position: absolute;
+	width: 40px;
+	height: 42px;
+	position: fixed;
+	top: 0px;
+	right: 0px;
+	background-color: rgb(255, 255, 255);
+	background-image: url("../assets/project-preview-close.png");
+	background-size: 24px auto;
+	background-position: center center;
+	background-repeat: no-repeat;
+	z-index: 6;
+	box-shadow: 0px 0px 4px 4px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+.people_form form {
+	background-color: #FFFFFF;
+	padding: 80px 20px 20px 20px;
+	height: 100%;
+	position: relative;
+}
+
+.people_form form button {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+.people_form .comment_input,.people_form .name_input {
+	width: 100%;
+	max-width: 100%;
+	min-width: 100%;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	padding: 5px;
+}
+
+.people_form .name_input {
+	
+}
+
+.people_form .comment_input {
+	
 }

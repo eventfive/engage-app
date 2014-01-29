@@ -2734,6 +2734,94 @@ var e5;
     })(e5.ui || (e5.ui = {}));
     var ui = e5.ui;
 })(e5 || (e5 = {}));
+var e5;
+(function (e5) {
+    (function (ui) {
+        var IToastLayout = (function () {
+            function IToastLayout() {
+                this.top = "top";
+                this.bottom = "bottom";
+                this.center = "center";
+            }
+            return IToastLayout;
+        })();
+        ui.IToastLayout = IToastLayout;
+
+        var Toast = (function () {
+            function Toast() {
+                this.element = $("<div class='e5_toast'></div>");
+                this.element.css("visibility", "hidden");
+                this.element.css("opacity", "0");
+                $("body").append(this.element);
+            }
+            Toast.show = function (setting) {
+                if (!Toast._target) {
+                    Toast._target = new Toast();
+                }
+
+                if (Toast._running) {
+                    Toast._queue.push(setting);
+                    return;
+                }
+
+                Toast._running = true;
+                Toast._target.apply(setting);
+                Toast._target.show();
+            };
+
+            Toast.prototype.apply = function (setting) {
+                var _this = this;
+                this.setting = setting;
+
+                this.element.attr("class", "e5_toast");
+
+                this.element.empty();
+                this.element.text(setting.message);
+
+                if (setting.htmlContent)
+                    this.element.append(setting.htmlContent);
+
+                if (setting.styleClass)
+                    this.element.addClass(setting.styleClass);
+
+                this.element.css("margin-left", -(this.element.outerWidth(false) * 0.5) + "px");
+
+                var dur = setting.duration ? setting.duration : 3000;
+                setTimeout(function () {
+                    return _this.hide();
+                }, dur);
+            };
+
+            Toast.prototype.show = function () {
+                TweenMax.to(this.element, 0.5, { autoAlpha: 1 });
+            };
+
+            Toast.prototype.hide = function () {
+                TweenMax.to(this.element, 0.5, { autoAlpha: 0, onComplete: this.onHideComplete });
+            };
+
+            Toast.prototype.onHideComplete = function () {
+                Toast.handleToastComplete();
+            };
+
+            Toast.handleToastComplete = function () {
+                if (Toast._queue.length > 0) {
+                    var setting = Toast._queue.shift();
+                    Toast._target.apply(setting);
+                    Toast._target.show();
+                } else {
+                    Toast._running = false;
+                }
+            };
+            Toast._queue = [];
+            Toast._target = null;
+            Toast._running = false;
+            return Toast;
+        })();
+        ui.Toast = Toast;
+    })(e5.ui || (e5.ui = {}));
+    var ui = e5.ui;
+})(e5 || (e5 = {}));
 var engage;
 (function (engage) {
     (function (model) {
@@ -5359,18 +5447,27 @@ var engage;
                 this.init();
             }
             PeopleMarker.prototype.init = function () {
-                var _iconSettingDefault = {
-                    iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png",
-                    className: "marker_icon",
-                    iconSize: new L.Point(20, 28),
-                    iconAnchor: new L.Point(9, 23)
-                };
+                //            var _iconSettingDefault: L.IconOptions = {
+                //                iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png",
+                //                className: "marker_icon",
+                //                iconSize: new L.Point(20, 28),
+                //                iconAnchor: new L.Point(9, 23)
+                //            };
+                var iconSetting = {};
+                iconSetting.iconSize = new L.Point(31, 39);
+                iconSetting.className = "people_marker_icon";
+                iconSetting.iconAnchor = new L.Point(15, 35);
 
-                var icon = new L.Icon(_iconSettingDefault);
+                //            iconSetting.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
+                iconSetting.html = "<div class='people_marker_icon_fitzel'></div><img src='/klaus.jpg' />";
+
+                var icon = new L.DivIcon(iconSetting);
 
                 this.position = new L.LatLng(51.53534, 7.760203); //53.867459, 20.702831);
                 this.marker = new L.Marker(this.position);
                 this.marker.setIcon(icon);
+
+                //            this.marker.bindPopup("BLUB");
                 this.map.markerLayer.addLayer(this.marker);
             };
             return PeopleMarker;
@@ -5425,13 +5522,97 @@ var engage;
             };
 
             PeopleMap.prototype.refresh = function () {
-                this.map.invalidateSize(false);
+                var _this = this;
+                setTimeout(function () {
+                    return _this.map.invalidateSize(false);
+                }, 50);
             };
             return PeopleMap;
         })();
         map.PeopleMap = PeopleMap;
     })(engage.map || (engage.map = {}));
     var map = engage.map;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (page) {
+        var PeopleForm = (function () {
+            function PeopleForm(app) {
+                var _this = this;
+                this.app = app;
+                this.element = $("<div class='people_form'></div>");
+                $("body").append(this.element);
+
+                this._abort = $("<div class='abort'></div>");
+                this.element.append(this._abort);
+
+                var form = $("<form action=''></form>");
+
+                this._nameInput = $("<input class='name_input' placeholder='name'></input>");
+                form.append(this._nameInput);
+
+                this._commentInput = $("<textarea class='comment_input' placeholder='comment'></textarea>");
+                form.append(this._commentInput);
+
+                this._submitBtn = $("<button type='submit'>Submit</button>");
+                form.append(this._submitBtn);
+
+                this.element.append(form);
+
+                this.hide();
+
+                this._abort.bind("click", function (e) {
+                    return _this.handleClickAbort(e);
+                });
+                this._submitBtn.bind("click", function (e) {
+                    return _this.handleClickSubmit(e);
+                });
+
+                $(window).bind("resize", function () {
+                    return _this.handleResizeWindow();
+                });
+                this.handleResizeWindow();
+            }
+            PeopleForm.prototype.hide = function () {
+                this.element.css("display", "none");
+            };
+
+            PeopleForm.prototype.show = function () {
+                this.element.css("display", "block");
+                this.resize();
+            };
+
+            PeopleForm.prototype.handleResizeWindow = function () {
+                this.resize();
+            };
+
+            PeopleForm.prototype.resize = function () {
+                var hei = $(window).height();
+                var top = this._commentInput.position().top;
+                var res = (hei - top) - 50;
+                this._commentInput.css("height", res + "px");
+                this._commentInput.css("min-height", res + "px");
+                this._commentInput.css("max-height", res + "px");
+            };
+
+            PeopleForm.prototype.handleClickAbort = function (e) {
+                this.hide();
+                return false;
+            };
+
+            PeopleForm.prototype.handleClickSubmit = function (e) {
+                e.preventDefault();
+
+                this.element.toggleClass("progress", true);
+                this.app.people.camera.upload(this._nameInput.text(), this._commentInput.text());
+
+                return false;
+            };
+            return PeopleForm;
+        })();
+        page.PeopleForm = PeopleForm;
+    })(engage.page || (engage.page = {}));
+    var page = engage.page;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
@@ -5451,19 +5632,22 @@ var engage;
                 this.map = new engage.map.PeopleMap(this.app);
                 this.element.append(this.map.element);
 
-                this.btnTakeImage = $("<div class='take_image'>TAKE AN IMAGE</div>");
+                this.btnTakeImage = $("<div class='take_image'></div>");
                 this.element.append(this.btnTakeImage);
                 this.btnTakeImage.bind("click", function (evt) {
                     return _this.handleClickTakeImage();
                 });
+
+                this.form = new engage.page.PeopleForm(this.app);
 
                 this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
                 this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
             };
 
             PeoplePage.prototype.handleCaptureSuccess = function () {
-                $("body").append(this.camera.image);
-                this.camera.upload();
+                //            $("body").append(this.camera.image);
+                //            this.camera.upload();
+                this.form.show();
             };
 
             PeoplePage.prototype.handleUploadSuccess = function () {
@@ -5471,7 +5655,8 @@ var engage;
             };
 
             PeoplePage.prototype.handleClickTakeImage = function () {
-                this.camera.capture();
+                //            this.camera.capture();
+                this.form.show();
                 return false;
             };
             return PeoplePage;
@@ -5495,7 +5680,7 @@ var engage;
             CameraUtil.prototype.capture = function () {
                 var _this = this;
                 if (!navigator.camera) {
-                    $(".take_image").text("camera not found");
+                    e5.ui.Toast.show({ message: "Camera not found" });
                     return;
                 }
 
@@ -5519,8 +5704,7 @@ var engage;
             CameraUtil.prototype.handleCaptureSuccess = function (imagURI) {
                 this.path = imagURI;
 
-                $(".take_image").text("take a picture success" + imagURI);
-
+                //            $(".take_image").text("take a picture success" + imagURI);
                 this.image = $('<img></img>');
                 this.image.css("position", "absolute");
                 this.image.css("top", "0");
@@ -5531,11 +5715,11 @@ var engage;
             };
 
             CameraUtil.prototype.handleCaptureFailed = function (message) {
-                $(".take_image").text("take a picture failed");
+                //            $(".take_image").text("take a picture failed");
                 this.onCaptureError.dispatch(this.path, message);
             };
 
-            CameraUtil.prototype.upload = function () {
+            CameraUtil.prototype.upload = function (name, comment) {
                 var _this = this;
                 var imageURI = this.path;
 
@@ -5548,8 +5732,8 @@ var engage;
                 };
 
                 var params = new Object();
-                params.value1 = "test";
-                params.value2 = "param";
+                params.name = name;
+                params.comment = comment;
 
                 options.params = params;
                 options.chunkedMode = false;
@@ -5563,12 +5747,12 @@ var engage;
             };
 
             CameraUtil.prototype.handleUploadSuccess = function (r) {
-                $(".take_image").text("UPLOAD COMPLETE" + r.response);
+                e5.ui.Toast.show({ message: "Your image is successfully uploaded" });
                 this.onUploadSuccess.dispatch();
             };
 
             CameraUtil.prototype.handleUploadFailed = function (r) {
-                $(".take_image").text("UPLOAD FAILED" + r.response);
+                e5.ui.Toast.show({ message: "Your image could not be uploaded" });
                 this.onUploadError.dispatch(this.path, r.response);
             };
             return CameraUtil;
@@ -5627,6 +5811,7 @@ var engage;
             this.projectPreview.getSlideshow().appendToBody(true);
 
             this.mapHandler.getMap().touchZoom.enable();
+            this.mapHandler.getMap().dragging.enable();
             this.projectList.setSortEnabled(false);
 
             var page_container = $("<div class='page_container'></div>");
