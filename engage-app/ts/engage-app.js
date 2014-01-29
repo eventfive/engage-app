@@ -5655,8 +5655,9 @@ var engage;
             };
 
             PeoplePage.prototype.handleClickTakeImage = function () {
-                //            this.camera.capture();
-                this.form.show();
+                this.camera.capture();
+
+                //            this.form.show();
                 return false;
             };
             return PeoplePage;
