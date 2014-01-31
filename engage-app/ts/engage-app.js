@@ -2848,7 +2848,8 @@ var engage;
                     'ui_label',
                     'page',
                     'page_media',
-                    'menu'];
+                    'menu',
+                    'people_data'];
                 this._loadFromWeb = true;
             }
             BaseDataManager.prototype.loadFromWeb = function () {
@@ -3068,6 +3069,14 @@ var engage;
                 var l = this.data.influence.length;
                 for (var i = 0; i < l; ++i) {
                     item = this.data.influence[i];
+                }
+            };
+            BaseDataManager.prototype.resolve_people_data = function () {
+                var item;
+                var l = this.data.people_data.length;
+                for (var i = 0; i < l; ++i) {
+                    item = this.data.people_data[i];
+                    item.media = this.resolveById('media', item.media);
                 }
             };
             BaseDataManager.prototype.resolve_ui_label = function () {
@@ -5548,10 +5557,10 @@ var engage;
 
                 var form = $("<form action=''></form>");
 
-                this._nameInput = $("<input class='name_input' placeholder='name'></input>");
+                this._nameInput = $("<input class='name_input' placeholder='name*'></input>");
                 form.append(this._nameInput);
 
-                this._commentInput = $("<textarea class='comment_input' placeholder='comment'></textarea>");
+                this._commentInput = $("<textarea class='comment_input' placeholder='comment*'></textarea>");
                 form.append(this._commentInput);
 
                 this._submitBtn = $("<button type='submit'>Submit</button>");
@@ -5572,9 +5581,15 @@ var engage;
                     return _this.handleResizeWindow();
                 });
                 this.handleResizeWindow();
+                //            this.app.people.camera.onUploadSuccess.add(this.handleCameraUploadComplete, this);
+                //            this.app.people.camera.onUploadError.add(this.handleCameraUploadComplete, this);
             }
+            //        private handleCameraUploadComplete(): void {
+            //            this.hide();
+            //        }
             PeopleForm.prototype.hide = function () {
                 this.element.css("display", "none");
+                this.element.removeClass("progress");
             };
 
             PeopleForm.prototype.show = function () {
@@ -5601,12 +5616,28 @@ var engage;
             };
 
             PeopleForm.prototype.handleClickSubmit = function (e) {
+                var _this = this;
                 e.preventDefault();
 
-                this.element.toggleClass("progress", true);
-                this.app.people.camera.upload(this._nameInput.text(), this._commentInput.text());
+                this.element.addClass("progress");
+
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    return _this.handleGeolocationSuccess(position);
+                }, function (error) {
+                    return _this.handleGeolocationError(error);
+                });
 
                 return false;
+            };
+
+            PeopleForm.prototype.handleGeolocationSuccess = function (position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                this.app.people.camera.upload(this._nameInput.text(), this._commentInput.text(), lat, lng);
+            };
+
+            PeopleForm.prototype.handleGeolocationError = function (error) {
+                e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
             };
             return PeopleForm;
         })();
@@ -5641,23 +5672,25 @@ var engage;
                 this.form = new engage.page.PeopleForm(this.app);
 
                 this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
+                this.camera.onUploadError.add(this.handleUploadError, this);
                 this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
             };
 
             PeoplePage.prototype.handleCaptureSuccess = function () {
-                //            $("body").append(this.camera.image);
-                //            this.camera.upload();
                 this.form.show();
             };
 
             PeoplePage.prototype.handleUploadSuccess = function () {
                 this.camera.image.remove();
+                this.form.hide();
+            };
+
+            PeoplePage.prototype.handleUploadError = function () {
+                this.form.element.removeClass("progress");
             };
 
             PeoplePage.prototype.handleClickTakeImage = function () {
                 this.camera.capture();
-
-                //            this.form.show();
                 return false;
             };
             return PeoplePage;
@@ -5676,7 +5709,7 @@ var engage;
                 this.onCaptureSuccess = new e5.core.Signal();
                 this.onCaptureError = new e5.core.Signal();
                 this.image = null;
-                this.path = null;
+                this.imageURI = null;
             }
             CameraUtil.prototype.capture = function () {
                 var _this = this;
@@ -5703,7 +5736,7 @@ var engage;
             };
 
             CameraUtil.prototype.handleCaptureSuccess = function (imagURI) {
-                this.path = imagURI;
+                this.imageURI = imagURI;
 
                 //            $(".take_image").text("take a picture success" + imagURI);
                 this.image = $('<img></img>');
@@ -5717,12 +5750,12 @@ var engage;
 
             CameraUtil.prototype.handleCaptureFailed = function (message) {
                 //            $(".take_image").text("take a picture failed");
-                this.onCaptureError.dispatch(this.path, message);
+                this.onCaptureError.dispatch(this.imageURI, message);
             };
 
-            CameraUtil.prototype.upload = function (name, comment) {
+            CameraUtil.prototype.upload = function (name, comment, latitude, longitude) {
                 var _this = this;
-                var imageURI = this.path;
+                var imageURI = this.imageURI;
 
                 var options = new FileUploadOptions();
                 options.fileKey = "file";
@@ -5749,12 +5782,13 @@ var engage;
 
             CameraUtil.prototype.handleUploadSuccess = function (r) {
                 e5.ui.Toast.show({ message: "Your image is successfully uploaded" });
+                e5.ui.Toast.show({ message: r.response, duration: 10000 });
                 this.onUploadSuccess.dispatch();
             };
 
             CameraUtil.prototype.handleUploadFailed = function (r) {
                 e5.ui.Toast.show({ message: "Your image could not be uploaded" });
-                this.onUploadError.dispatch(this.path, r.response);
+                this.onUploadError.dispatch(this.imageURI, r.response);
             };
             return CameraUtil;
         })();
