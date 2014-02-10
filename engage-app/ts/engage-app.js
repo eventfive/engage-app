@@ -5631,12 +5631,15 @@ var engage;
 
                 this.element.addClass("progress");
 
-                //            e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
+                var options = {};
+                options.timeout = 5000;
+                options.enableHighAccuracy = true;
+
                 navigator.geolocation.getCurrentPosition(function (position) {
                     return _this.handleGeolocationSuccess(position);
                 }, function (error) {
                     return _this.handleGeolocationError(error);
-                });
+                }, options);
 
                 return false;
             };
