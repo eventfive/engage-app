@@ -5652,11 +5652,13 @@ var engage;
                     this.app.people.camera.upload(this._nameInput.text(), this._commentInput.text(), lat, lng);
                 } else {
                     e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
+                    this.element.removeClass("progress");
                 }
             };
 
             PeopleForm.prototype.handleGeolocationError = function (error) {
                 e5.ui.Toast.show({ message: "Your GPS is disabled", duration: 3000 });
+                this.element.removeClass("progress");
             };
             return PeopleForm;
         })();
