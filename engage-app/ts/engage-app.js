@@ -5632,7 +5632,7 @@ var engage;
                 this.element.addClass("progress");
 
                 var options = {};
-                options.timeout = 5000;
+                options.timeout = 15000;
                 options.enableHighAccuracy = true;
 
                 navigator.geolocation.getCurrentPosition(function (position) {
