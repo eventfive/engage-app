@@ -5795,7 +5795,7 @@ var engage;
                 };
 
                 var ft = new FileTransfer();
-                ft.upload(imageURI, encodeURI("http://192.168.1.26/upload.php"), function (r) {
+                ft.upload(imageURI, encodeURI("http://192.168.1.26/eventfive/web/engage-map/php/upload.php"), function (r) {
                     return _this.handleUploadSuccess(r);
                 }, function (r) {
                     return _this.handleUploadFailed(r);
