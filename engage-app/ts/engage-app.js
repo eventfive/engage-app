@@ -2749,12 +2749,28 @@ var e5;
 
         var Toast = (function () {
             function Toast() {
+                var _this = this;
+                this._timeoutId = 0;
                 this.element = $("<div class='e5_toast'></div>");
                 this.element.css("visibility", "hidden");
                 this.element.css("opacity", "0");
                 $("body").append(this.element);
+
+                this.element.bind("click", function (evt) {
+                    return _this.handleClick(evt);
+                });
             }
+            Toast.prototype.handleClick = function (evt) {
+                if (this.setting.allowClose) {
+                    this.hide();
+                }
+            };
+
             Toast.show = function (setting) {
+                //skip if no message defined
+                if (!setting.message)
+                    return;
+
                 if (!Toast._target) {
                     Toast._target = new Toast();
                 }
@@ -2797,7 +2813,7 @@ var e5;
                 this.element.css("margin-left", -Math.round(this.element.outerWidth(false) * 0.5) + "px");
 
                 var dur = setting.duration ? setting.duration : 3000;
-                setTimeout(function () {
+                this._timeoutId = setTimeout(function () {
                     return _this.hide();
                 }, dur);
             };
@@ -2807,6 +2823,7 @@ var e5;
             };
 
             Toast.prototype.hide = function () {
+                clearTimeout(this._timeoutId);
                 TweenMax.to(this.element, 0.5, { autoAlpha: 0, onComplete: this.onHideComplete });
             };
 
@@ -5804,7 +5821,7 @@ var engage;
 
             CameraUtil.prototype.handleUploadSuccess = function (r) {
                 e5.ui.Toast.show({ message: "Your image is successfully uploaded" });
-                e5.ui.Toast.show({ message: r.response, duration: 10000 });
+                e5.ui.Toast.show({ message: r.response, duration: 10000, allowClose: true });
                 this.onUploadSuccess.dispatch();
             };
 
