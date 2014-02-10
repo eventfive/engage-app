@@ -5643,6 +5643,7 @@ var engage;
             PeopleForm.prototype.handleGeolocationSuccess = function (position) {
                 var lat = position.coords.latitude;
                 var lng = position.coords.longitude;
+                e5.ui.Toast.show({ message: "Your GPS-position is " + lat + "/" + lng, duration: 3000 });
                 this.app.people.camera.upload(this._nameInput.text(), this._commentInput.text(), lat, lng);
             };
 
