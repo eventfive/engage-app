@@ -2760,6 +2760,16 @@ var e5;
                 }
 
                 if (Toast._running) {
+                    if (setting.key) {
+                        if (this._target.setting && this._target.setting.key == setting.key)
+                            return;
+                        var l = this._queue.length;
+                        for (var i = 0; i < l; ++i) {
+                            if (this._queue[i].key == setting.key) {
+                                return;
+                            }
+                        }
+                    }
                     Toast._queue.push(setting);
                     return;
                 }
@@ -5714,11 +5724,10 @@ var engage;
             CameraUtil.prototype.capture = function () {
                 var _this = this;
                 if (!navigator.camera) {
-                    e5.ui.Toast.show({ message: "Camera not found" });
+                    e5.ui.Toast.show({ message: "Camera not found", key: "camera_not_found" });
                     return;
                 }
 
-                $(".take_image").text("try taking picture");
                 navigator.camera.getPicture(function (img) {
                     return _this.handleCaptureSuccess(img);
                 }, function (msg) {
@@ -5757,20 +5766,19 @@ var engage;
                 var _this = this;
                 var imageURI = this.imageURI;
 
-                var options = new FileUploadOptions();
-                options.fileKey = "file";
-                options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
-                options.mimeType = "image/jpeg";
-                options.headers = {
-                    Connection: "close"
-                };
-
                 var params = new Object();
                 params.name = name;
                 params.comment = comment;
 
+                var options = new FileUploadOptions();
                 options.params = params;
+                options.fileKey = "file";
+                options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);
+                options.mimeType = "image/jpeg";
                 options.chunkedMode = false;
+                options.headers = {
+                    Connection: "close"
+                };
 
                 var ft = new FileTransfer();
                 ft.upload(imageURI, encodeURI("http://192.168.1.26/upload.php"), function (r) {
