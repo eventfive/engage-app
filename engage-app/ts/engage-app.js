@@ -5656,7 +5656,7 @@ var engage;
             };
 
             PeopleForm.prototype.handleGeolocationError = function (error) {
-                e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
+                e5.ui.Toast.show({ message: "Your GPS is disabled", duration: 3000 });
             };
             return PeopleForm;
         })();
