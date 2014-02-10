@@ -5519,7 +5519,7 @@ var engage;
                 this.map = new L.Map(this.element[0]);
                 this.map.setView(initialPosition, 4);
                 this.map.scrollWheelZoom.disable();
-                this.map.touchZoom.disable();
+                this.map.touchZoom.enable();
                 this.map.dragging.enabled();
                 this.map.zoomControl.removeFrom(this.map);
 
@@ -5632,9 +5632,9 @@ var engage;
                 this.element.addClass("progress");
 
                 var options = {};
-                options.timeout = 15000;
+                options.timeout = 12000;
+                options.enableHighAccuracy = false;
 
-                //            options.enableHighAccuracy = true;
                 navigator.geolocation.getCurrentPosition(function (position) {
                     return _this.handleGeolocationSuccess(position);
                 }, function (error) {
@@ -5775,7 +5775,7 @@ var engage;
 
             CameraUtil.prototype.upload = function (name, comment, latitude, longitude) {
                 var _this = this;
-                e5.ui.Toast.show({ message: "Upload data... please wait" });
+                e5.ui.Toast.show({ message: "Upload data... please wait" + name });
 
                 var imageURI = this.imageURI;
 
