@@ -5626,15 +5626,18 @@ var engage;
             };
 
             PeopleForm.prototype.handleClickSubmit = function (e) {
+                var _this = this;
                 e.preventDefault();
 
                 this.element.addClass("progress");
 
-                e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
+                //            e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    return _this.handleGeolocationSuccess(position);
+                }, function (error) {
+                    return _this.handleGeolocationError(error);
+                });
 
-                //            navigator.geolocation.getCurrentPosition(
-                //                (position: any) => this.handleGeolocationSuccess(position),
-                //                (error: any) => this.handleGeolocationError(error));
                 return false;
             };
 
