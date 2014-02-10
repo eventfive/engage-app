@@ -5764,6 +5764,8 @@ var engage;
 
             CameraUtil.prototype.upload = function (name, comment, latitude, longitude) {
                 var _this = this;
+                e5.ui.Toast.show({ message: "Upload data... please wait" });
+
                 var imageURI = this.imageURI;
 
                 var params = new Object();
