@@ -2794,7 +2794,7 @@ var e5;
                 if (setting.styleClass)
                     this.element.addClass(setting.styleClass);
 
-                this.element.css("margin-left", -(this.element.outerWidth(false) * 0.5) + "px");
+                this.element.css("margin-left", -(this.element.innerWidth() * 0.5) + "px");
 
                 var dur = setting.duration ? setting.duration : 3000;
                 setTimeout(function () {
