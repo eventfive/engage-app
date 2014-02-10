@@ -5648,10 +5648,9 @@ var engage;
                 if (position) {
                     var lat = position.coords.latitude;
                     var lng = position.coords.longitude;
-                    e5.ui.Toast.show({ message: "Your GPS-position is " + lat + "/" + lng, duration: 3000 });
                     this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), lat, lng);
                 } else {
-                    e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
+                    e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 4000 });
                     this.element.removeClass("progress");
                 }
             };
@@ -5775,13 +5774,15 @@ var engage;
 
             CameraUtil.prototype.upload = function (name, comment, latitude, longitude) {
                 var _this = this;
-                e5.ui.Toast.show({ message: "Upload data... please wait" + name });
+                e5.ui.Toast.show({ message: "Upload data... please wait" });
 
                 var imageURI = this.imageURI;
 
                 var params = new Object();
                 params.name = name;
                 params.comment = comment;
+                params.latitude = latitude;
+                params.longitude = longitude;
 
                 var options = new FileUploadOptions();
                 options.params = params;
