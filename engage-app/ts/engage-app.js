@@ -5649,7 +5649,7 @@ var engage;
                     var lat = position.coords.latitude;
                     var lng = position.coords.longitude;
                     e5.ui.Toast.show({ message: "Your GPS-position is " + lat + "/" + lng, duration: 3000 });
-                    this.app.people.camera.upload(this._nameInput.text(), this._commentInput.text(), lat, lng);
+                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), lat, lng);
                 } else {
                     e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 3000 });
                     this.element.removeClass("progress");
