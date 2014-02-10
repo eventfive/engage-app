@@ -5633,8 +5633,8 @@ var engage;
 
                 var options = {};
                 options.timeout = 15000;
-                options.enableHighAccuracy = true;
 
+                //            options.enableHighAccuracy = true;
                 navigator.geolocation.getCurrentPosition(function (position) {
                     return _this.handleGeolocationSuccess(position);
                 }, function (error) {
