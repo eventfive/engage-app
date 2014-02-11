@@ -2895,6 +2895,7 @@ var engage;
                 setting.url = url;
                 setting.dataType = "json";
                 setting.crossDomain = true;
+                setting.isLocal = !this._loadFromWeb;
                 setting.success = function (data) {
                     return _this.handleDataSuccess(data);
                 };
