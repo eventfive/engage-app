@@ -5847,7 +5847,7 @@ var engage;
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
                 engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
             } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
                 engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
