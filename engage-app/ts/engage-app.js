@@ -5867,7 +5867,7 @@ var engage;
                 this.manager.loadFromDisk();
             else {
                 //TODO: some user notification like, ERROR LOADING DATA
-                alert("Sorry error loading data.");
+                alert("Sorry error loading data." + status + error);
             }
         };
 
