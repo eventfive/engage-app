@@ -7,7 +7,7 @@ var engage;
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
             Ressource.MEDIA_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-            Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
+            Ressource.CLOUD_DATA_OFFLINE = "www/data.init.json";
             return Ressource;
         })();
         model.Ressource = Ressource;
