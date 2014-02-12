@@ -5677,6 +5677,7 @@ var engage;
 
             PeopleForm.prototype.handleGeolocationError = function (error) {
                 e5.ui.Toast.show({ message: "Your GPS is disabled", duration: 3000 });
+                this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
                 this.element.removeClass("progress");
             };
             return PeopleForm;
