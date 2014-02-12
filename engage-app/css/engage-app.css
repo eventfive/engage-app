@@ -1839,7 +1839,7 @@ html,#content,#map_holder {
 	height: 100%;
 }
 
-body * {
+/* body * {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -1848,16 +1848,16 @@ body * {
 	user-select: none;
 	-webkit-text-size-adjust: none;
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
+} */
 
-body * {
+/* body * {
 	-webkit-touch-callout: default;
 	-webkit-user-select: default;
 	-khtml-user-select: default;
 	-moz-user-select: default;
 	-ms-user-select: default;
 	user-select: default;
-}
+} */
 
 html,body {
 	overflow: hidden;
