@@ -2880,11 +2880,13 @@ var engage;
                 this._loadFromWeb = true;
             }
             BaseDataManager.prototype.loadFromWeb = function () {
+                console.log("LOAD FROM WEB");
                 this._loadFromWeb = true;
                 this.load(engage.model.Ressource.CLOUD_DATA_REQUEST);
             };
 
             BaseDataManager.prototype.loadFromDisk = function () {
+                console.log("LOAD FROM DISK");
                 this._loadFromWeb = false;
                 this.load(engage.model.Ressource.CLOUD_DATA_OFFLINE);
             };
@@ -3129,7 +3131,9 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.loadFromDisk(); //this.loadFromWeb();
+
+                //this.loadFromDisk();
+                this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
@@ -5549,7 +5553,7 @@ var engage;
 
                 var icon = new L.DivIcon(iconSetting);
 
-                this.position = new L.LatLng(51.53534, 7.760203); //53.867459, 20.702831);
+                this.position = new L.LatLng(this.data.latitude, this.data.longitude); //53.867459, 20.702831);
                 this.marker = new L.Marker(this.position);
                 this.marker.setIcon(icon);
 
@@ -5568,6 +5572,7 @@ var engage;
         var PeopleMap = (function () {
             function PeopleMap(app) {
                 this.app = app;
+                this._markers = [];
                 this.init();
             }
             PeopleMap.prototype.init = function () {
@@ -5585,9 +5590,9 @@ var engage;
 
                 this.map = new L.Map(this.element[0]);
                 this.map.setView(initialPosition, 4);
-                this.map.scrollWheelZoom.disable();
                 this.map.touchZoom.enable();
                 this.map.dragging.enabled();
+                this.map.scrollWheelZoom.enable();
                 this.map.zoomControl.removeFrom(this.map);
 
                 var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
@@ -5604,7 +5609,11 @@ var engage;
                 });
 
                 //for test only
-                new engage.map.PeopleMarker(this, null);
+                var pd = this.app.manager.data.people_data;
+                var l = pd.length;
+                for (var i = 0; i < l; ++i) {
+                    this._markers.push(new engage.map.PeopleMarker(this, pd[i]));
+                }
             };
 
             PeopleMap.prototype.refresh = function () {
@@ -5634,10 +5643,12 @@ var engage;
 
                 var form = $("<form action=''></form>");
 
-                this._nameInput = $("<input class='name_input' placeholder='name*' tabindex='0'></input>");
+                form.append($('<label for="name">Name</label>'));
+                this._nameInput = $("<input class='name_input' tabindex='0' name='name'></input>");
                 form.append(this._nameInput);
 
-                this._commentInput = $("<textarea class='comment_input' placeholder='comment*' tabindex='1'></textarea>");
+                form.append($('<label for="comment">Comment</label>'));
+                this._commentInput = $("<textarea class='comment_input' tabindex='1' name='comment'></textarea>");
                 form.append(this._commentInput);
 
                 this._submitBtn = $("<button type='submit'>Submit</button>");
@@ -5683,7 +5694,8 @@ var engage;
             PeopleForm.prototype.resize = function () {
                 var hei = $(window).height();
                 var top = this._commentInput.position().top;
-                var res = (hei - top) - 50;
+                var res = (hei - top) - 80;
+                res = Math.max(res, 160);
                 this._commentInput.css("height", res + "px");
                 this._commentInput.css("min-height", res + "px");
                 this._commentInput.css("max-height", res + "px");
@@ -5782,7 +5794,8 @@ var engage;
             };
 
             PeoplePage.prototype.handleClickTakeImage = function () {
-                this.camera.capture();
+                //            this.camera.capture();
+                this.camera.onCaptureSuccess.dispatch();
                 return false;
             };
             return PeoplePage;
@@ -5897,7 +5910,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.DEBUG_AS_APP;
+            var publishType = engage.model.PublishType.DEBUG_AS_WEB;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
@@ -5941,6 +5954,7 @@ var engage;
 
             this.mapHandler.getMap().touchZoom.enable();
             this.mapHandler.getMap().dragging.enable();
+            this.mapHandler.getMap().scrollWheelZoom.enable();
             this.projectList.setSortEnabled(false);
 
             var page_container = $("<div class='page_container'></div>");

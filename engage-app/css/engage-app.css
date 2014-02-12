@@ -2530,6 +2530,7 @@ iframe{
 	background-color: #FFFFFF;
 	padding: 80px 20px 20px 20px;
 	height: 100%;
+	min-height:300px;
 	position: relative;
 }
 
@@ -2557,4 +2558,13 @@ iframe{
 
 .people_form .comment_input {
 	
+}
+
+.people_form form button[type="submit"] {
+    margin: 10px 0px;
+    background-color: #055169;
+    color: #FFF;
+    border: 2px groove #000;
+    padding: 10px;
+    font-weight: bold;
 }
