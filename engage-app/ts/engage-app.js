@@ -5422,6 +5422,55 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
+    (function (media) {
+        var GPSHandler = (function () {
+            function GPSHandler() {
+                this.onStateChange = new e5.core.Signal();
+                this.latitude = 0;
+                this.longitude = 0;
+                this.state = "undefined";
+            }
+            GPSHandler.prototype.update = function () {
+                var _this = this;
+                var options = {};
+                options.timeout = 12000;
+                options.enableHighAccuracy = false;
+
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    return _this.handleGeolocationSuccess(position);
+                }, function (error) {
+                    return _this.handleGeolocationError(error);
+                }, options);
+            };
+
+            GPSHandler.prototype.handleGeolocationSuccess = function (position) {
+                if (position) {
+                    this.latitude = position.coords.latitude;
+                    this.longitude = position.coords.longitude;
+                    this.setState("ready");
+                } else {
+                    this.setState("error");
+                }
+            };
+
+            GPSHandler.prototype.handleGeolocationError = function (error) {
+                this.setState("disabled");
+            };
+
+            GPSHandler.prototype.setState = function (state) {
+                if (this.state == state)
+                    return;
+                this.state = state;
+                this.onStateChange.dispatch(this.state);
+            };
+            return GPSHandler;
+        })();
+        media.GPSHandler = GPSHandler;
+    })(engage.media || (engage.media = {}));
+    var media = engage.media;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
     (function (page) {
         var PageHandler = (function () {
             function PageHandler(app, container) {
@@ -5596,6 +5645,8 @@ var engage;
 
                 this.element.append(form);
 
+                this._gps = new engage.media.GPSHandler();
+
                 this.hide();
 
                 this._abort.bind("click", function (e) {
@@ -5659,7 +5710,6 @@ var engage;
                     return _this.handleGeolocationError(error);
                 }, options);
 
-                //            this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
                 return false;
             };
 
@@ -5669,15 +5719,16 @@ var engage;
                     var lng = position.coords.longitude;
                     this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), lat, lng);
                 } else {
-                    e5.ui.Toast.show({ message: "Your GPS-position is not available.", duration: 4000 });
-                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
+                    e5.ui.Toast.show({ message: "Your GPS-position is not available. Please try again", duration: 4000 });
                     this.element.removeClass("progress");
                 }
             };
 
             PeopleForm.prototype.handleGeolocationError = function (error) {
-                e5.ui.Toast.show({ message: "Your GPS is disabled", duration: 3000 });
-                this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
+                if (e5.core.Caps.isIOS)
+                    e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 5000 });
+                else
+                    e5.ui.Toast.show({ message: "Your GPS is disabled", duration: 5000 });
                 this.element.removeClass("progress");
             };
             return PeopleForm;
