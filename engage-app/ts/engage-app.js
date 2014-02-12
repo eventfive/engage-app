@@ -5865,6 +5865,7 @@ var engage;
             call.onreadystatechange = function () {
                 e5.ui.Toast.show({ message: call.readyState + "/" + call.status, duration: 5000 });
                 if (call.readyState == 4 && (call.status == 200 || call.status == 0)) {
+                    e5.ui.Toast.show({ message: "RECEIVED SOME DATA" });
                     e5.ui.Toast.show({ message: call.responseText, duration: 10000 });
                 }
             };
