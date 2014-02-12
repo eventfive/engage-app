@@ -5726,9 +5726,9 @@ var engage;
 
             PeopleForm.prototype.handleGeolocationError = function (error) {
                 if (e5.core.Caps.isIOS)
-                    e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 5000 });
+                    e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 6000 });
                 else
-                    e5.ui.Toast.show({ message: "Your GPS is disabled", duration: 5000 });
+                    e5.ui.Toast.show({ message: "Your GPS is disabled.", duration: 5000 });
                 this.element.removeClass("progress");
             };
             return PeopleForm;
@@ -5876,7 +5876,7 @@ var engage;
 
             CameraUtil.prototype.handleUploadSuccess = function (r) {
                 e5.ui.Toast.show({ message: "Your image is successfully uploaded" });
-                e5.ui.Toast.show({ message: r.response, duration: 10000, allowClose: true });
+                e5.ui.Toast.show({ message: r.response, duration: 3000, allowClose: true });
                 this.onUploadSuccess.dispatch();
             };
 
