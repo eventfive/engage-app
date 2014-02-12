@@ -5585,10 +5585,10 @@ var engage;
 
                 var form = $("<form action=''></form>");
 
-                this._nameInput = $("<input class='name_input' placeholder='name*'></input>");
+                this._nameInput = $("<input class='name_input' placeholder='name*' tabindex='0'></input>");
                 form.append(this._nameInput);
 
-                this._commentInput = $("<textarea class='comment_input' placeholder='comment*'></textarea>");
+                this._commentInput = $("<textarea class='comment_input' placeholder='comment*' tabindex='1'></textarea>");
                 form.append(this._commentInput);
 
                 this._submitBtn = $("<button type='submit'>Submit</button>");
@@ -5843,7 +5843,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.RELEASE;
+            var publishType = engage.model.PublishType.DEBUG_AS_APP;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
@@ -5861,18 +5861,6 @@ var engage;
 
             _super.call(this, wrapper);
 
-            //            var call = new XMLHttpRequest();
-            //            call.onreadystatechange = function() {
-            //             e5.ui.Toast.show({message:call.readyState + "/" + call.status, duration:5000});
-            //                if (call.readyState == 4 && (call.status == 200 || call.status == 0)) {
-            //                    e5.ui.Toast.show({message:"RECEIVED SOME DATA"});
-            //                    e5.ui.Toast.show({message:"ANY: " + call.response, duration:10000});
-            //                    e5.ui.Toast.show({message:"BODY: " + call.responseBody, duration:10000});
-            //                    e5.ui.Toast.show({message:"TEXT: " + call.responseText, duration:10000});
-            //                }
-            //            }
-            //            call.open("GET", engage.model.Ressource.CLOUD_DATA_OFFLINE, true);
-            //            call.send();
             this.manager.onError.add(this.onErrorLoadData, this);
         }
         MobileApplication.prototype.onErrorLoadData = function (loadFromWeb, status, error) {
@@ -5880,10 +5868,7 @@ var engage;
                 this.manager.loadFromDisk();
             else {
                 //TODO: some user notification like, ERROR LOADING DATA
-                if (!status)
-                    status = "";
-                status += " TEST";
-                alert("Sorry error loading data." + status + error);
+                alert("Sorry error loading data.");
             }
         };
 
