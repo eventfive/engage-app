@@ -5633,9 +5633,9 @@ var engage;
                 var hei = $(window).height();
                 var top = this._commentInput.position().top;
                 var res = (hei - top) - 50;
-                //            this._commentInput.css("height", res + "px");
-                //            this._commentInput.css("min-height", res + "px");
-                //            this._commentInput.css("max-height", res + "px");
+                this._commentInput.css("height", res + "px");
+                this._commentInput.css("min-height", res + "px");
+                this._commentInput.css("max-height", res + "px");
             };
 
             PeopleForm.prototype.handleClickAbort = function (e) {
