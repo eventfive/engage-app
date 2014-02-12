@@ -5644,20 +5644,19 @@ var engage;
             };
 
             PeopleForm.prototype.handleClickSubmit = function (e) {
-                var _this = this;
                 e.preventDefault();
 
                 this.element.addClass("progress");
 
-                var options = {};
-                options.timeout = 12000;
-                options.enableHighAccuracy = false;
-
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    return _this.handleGeolocationSuccess(position);
-                }, function (error) {
-                    return _this.handleGeolocationError(error);
-                }, options);
+                //            var options:PositionOptions = {};
+                //            options.timeout = 12000;
+                //            options.enableHighAccuracy = false;
+                //
+                //            navigator.geolocation.getCurrentPosition(
+                //                (position: any) => this.handleGeolocationSuccess(position),
+                //                (error: any) => this.handleGeolocationError(error),
+                //                options);
+                this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
 
                 return false;
             };
