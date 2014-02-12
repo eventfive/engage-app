@@ -2467,6 +2467,7 @@ iframe{
 	position: absolute;
 	width: 10px;
 	height: 10px;
+	-webkit-transform: rotate(45deg);
 	transform: rotate(45deg);
 	background-color: #FFFFFF;
 	left: 50%;
