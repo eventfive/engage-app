@@ -3131,8 +3131,9 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.loadFromDisk();
-                //            this.loadFromWeb();
+
+                //            this.loadFromDisk();
+                this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
@@ -5542,19 +5543,22 @@ var engage;
                 //                iconSize: new L.Point(20, 28),
                 //                iconAnchor: new L.Point(9, 23)
                 //            };
+                //            console.log("ADD MARKER PEOPLE");
                 var iconSetting = {};
                 iconSetting.iconSize = new L.Point(31, 39);
-                iconSetting.className = "people_marker_icon";
+                iconSetting.className = "marker_wrapper";
                 iconSetting.iconAnchor = new L.Point(15, 35);
 
                 //            iconSetting.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
-                iconSetting.html = "<div class='people_marker_icon_fitzel'></div><img src='/klaus.jpg' />";
+                //            iconSetting.html = "<div class='people_marker_icon_fitzel'></div><img src='/klaus.jpg' />";
+                iconSetting.html = "<div class='marker_icon'><img src='/marker.png' /></div>";
 
                 var icon = new L.DivIcon(iconSetting);
 
                 this.position = new L.LatLng(this.data.latitude, this.data.longitude); //53.867459, 20.702831);
                 this.marker = new L.Marker(this.position);
                 this.marker.setIcon(icon);
+                this.marker.bindPopup("<img src='/klaus.jpg' />");
 
                 //            this.marker.bindPopup("BLUB");
                 this.map.markerLayer.addLayer(this.marker);
@@ -5610,6 +5614,7 @@ var engage;
                 //for test only
                 var pd = this.app.manager.data.people_data;
                 var l = pd.length;
+                console.log("PEOPLE DATA LENGTH", l);
                 for (var i = 0; i < l; ++i) {
                     this._markers.push(new engage.map.PeopleMarker(this, pd[i]));
                 }
@@ -5729,17 +5734,19 @@ var engage;
                     var lng = position.coords.longitude;
                     this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), lat, lng);
                 } else {
-                    e5.ui.Toast.show({ message: "Your GPS-position is not available. Please try again", duration: 4000 });
-                    this.element.removeClass("progress");
+                    //                e5.ui.Toast.show({ message: "Your GPS-position is not available. Please try again", duration: 4000 });
+                    //                this.element.removeClass("progress");
+                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
                 }
             };
 
             PeopleForm.prototype.handleGeolocationError = function (error) {
-                if (e5.core.Caps.isIOS)
-                    e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 6000 });
-                else
-                    e5.ui.Toast.show({ message: "Your GPS is disabled.", duration: 5000 });
-                this.element.removeClass("progress");
+                //            if (e5.core.Caps.isIOS)
+                //                e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 6000 });
+                //            else
+                //                e5.ui.Toast.show({ message: "Your GPS is disabled.", duration: 5000 });
+                //            this.element.removeClass("progress");
+                this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
             };
             return PeopleForm;
         })();
@@ -5910,7 +5917,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.RELEASE;
+            var publishType = engage.model.PublishType.DEBUG_AS_WEB;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";

@@ -2456,14 +2456,30 @@ iframe{
 	background-color: #FFFFFF;
 }
 
-.people_marker_icon {
+.marker_wrapper {
+	width: 10px !important;
+	height: 10px !important;
+	margin-top:0 !important;
+	background-color:#00647C;
+	border-radius:10px;
+}
+
+.marker_wrapper img
+{
+	border: 3px solid #FFFFFF;
+	/* border-radius: 5px; */
+/* 	display:none; */
+	
+}
+
+/* .people_marker_icon {
 	width: auto !important;
 	height: auto !important;
 	margin: 0 !important;
 	box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
-}
+} */
 
-.people_marker_icon_fitzel {
+/* .people_marker_icon_fitzel {
 	position: absolute;
 	width: 10px;
 	height: 10px;
@@ -2482,7 +2498,7 @@ iframe{
 	position: relative;
 	border: 3px solid #FFFFFF;
 	border-radius: 5px;
-}
+} */
 
 .people_form {
 	position: absolute;
