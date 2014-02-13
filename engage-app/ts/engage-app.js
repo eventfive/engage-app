@@ -5595,8 +5595,8 @@ var engage;
                 this.map.zoomControl.removeFrom(this.map);
 
                 var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
-                this.map.setMaxBounds(maxBounds);
 
+                //            this.map.setMaxBounds(maxBounds);
                 var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileLayerAttr);
                 this.map.addLayer(_baseLayer);
 
@@ -5641,7 +5641,6 @@ var engage;
                 this.element.append(this._abort);
 
                 var form = $("<form action=''></form>");
-
                 form.append($('<label for="name">Name</label>'));
                 this._nameInput = $("<input class='name_input' tabindex='0' name='name'></input>");
                 form.append(this._nameInput);
@@ -5670,8 +5669,8 @@ var engage;
                     return _this.handleResizeWindow();
                 });
                 this.handleResizeWindow();
-                //            this.app.people.camera.onUploadSuccess.add(this.handleCameraUploadComplete, this);
-                //            this.app.people.camera.onUploadError.add(this.handleCameraUploadComplete, this);
+                //this.app.people.camera.onUploadSuccess.add(this.handleCameraUploadComplete, this);
+                //this.app.people.camera.onUploadError.add(this.handleCameraUploadComplete, this);
             }
             //        private handleCameraUploadComplete(): void {
             //            this.hide();
@@ -5694,7 +5693,7 @@ var engage;
                 var hei = $(window).height();
                 var top = this._commentInput.position().top;
                 var res = (hei - top) - 80;
-                res = Math.max(res, 160);
+                res = Math.max(res, 60);
                 this._commentInput.css("height", res + "px");
                 this._commentInput.css("min-height", res + "px");
                 this._commentInput.css("max-height", res + "px");
@@ -5840,15 +5839,15 @@ var engage;
                 });
             };
 
-            CameraUtil.prototype.handleCaptureSuccess = function (imagURI) {
-                this.imageURI = imagURI;
+            CameraUtil.prototype.handleCaptureSuccess = function (imageURI) {
+                this.imageURI = imageURI;
 
                 //            $(".take_image").text("take a picture success" + imagURI);
                 this.image = $('<img></img>');
                 this.image.css("position", "absolute");
                 this.image.css("top", "0");
                 this.image.css("left", "0");
-                this.image.attr("src", imagURI);
+                this.image.attr("src", imageURI);
 
                 this.onCaptureSuccess.dispatch();
             };
@@ -5993,9 +5992,8 @@ var engage;
             this._hei = $("#content").height();
             e5.core.Player.setEnabled(true);
             e5.core.Player.onTick.add(this.handleTick, this);
-
             //for test only
-            this.openPeople("TEST");
+            //            this.openPeople("TEST");
         };
 
         MobileApplication.prototype.handleTick = function () {
