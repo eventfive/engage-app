@@ -2457,16 +2457,21 @@ iframe{
 }
 
 .marker_wrapper {
-	width: 10px !important;
-	height: 10px !important;
-	margin-top:0 !important;
+	width: 18px !important;
+	height: 18px !important;
+	/* margin-top:0 !important;
 	background-color:#00647C;
-	border-radius:10px;
+	border-radius:10px; */
 }
 
 .marker_wrapper img
 {
-	border: 3px solid #FFFFFF;
+	/* border: 3px solid #FFFFFF; */
+	/* -webkit-transform:scale(0.5);
+	-moz-transform:scale(0.5);
+	transform:scale(0.5); */
+	width:9px;
+	height:9px;
 	/* border-radius: 5px; */
 /* 	display:none; */
 	

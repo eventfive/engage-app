@@ -3131,9 +3131,8 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-
-                //            this.loadFromDisk();
-                this.loadFromWeb();
+                this.loadFromDisk();
+                //            this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
@@ -5551,7 +5550,7 @@ var engage;
 
                 //            iconSetting.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
                 //            iconSetting.html = "<div class='people_marker_icon_fitzel'></div><img src='/klaus.jpg' />";
-                iconSetting.html = "<div class='marker_icon'><img src='/marker.png' /></div>";
+                iconSetting.html = "<div class='marker_icon'><img src='" + engage.model.Ressource.ASSET_PATH + "/people-marker.png' /></div>";
 
                 var icon = new L.DivIcon(iconSetting);
 
@@ -5917,7 +5916,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.RELEASE;
+            var publishType = engage.model.PublishType.DEBUG_AS_WEB;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
