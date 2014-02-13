@@ -3131,8 +3131,9 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.loadFromDisk();
-                //            this.loadFromWeb();
+
+                //            this.loadFromDisk();
+                this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
@@ -5916,7 +5917,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.DEBUG_AS_WEB;
+            var publishType = engage.model.PublishType.RELEASE;
 
             if (publishType == engage.model.PublishType.RELEASE) {
                 engage.model.Ressource.ASSET_PATH = "engage-app/assets";
