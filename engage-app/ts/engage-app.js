@@ -8,7 +8,7 @@ var engage;
                 this.publishType = publishType;
                 if (publishType == engage.model.PublishType.RELEASE) {
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     engage.model.Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
                     engage.model.Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
@@ -6009,7 +6009,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            engage.model.Ressource.setup(engage.model.PublishType.RELEASE);
+            engage.model.Ressource.setup(engage.model.PublishType.DEBUG_AS_WEB);
 
             _super.call(this, wrapper);
 
