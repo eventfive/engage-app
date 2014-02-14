@@ -10,17 +10,20 @@ var engage;
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
                     engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                    engage.model.Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                    engage.model.Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
                     engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
+                    engage.model.Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
                     engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
                     engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    engage.model.Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 }
             };
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
@@ -28,7 +31,7 @@ var engage;
             Ressource.PEOPLE_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
-            Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
+            Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
 
             Ressource.publishType = "";
             return Ressource;
@@ -3165,8 +3168,13 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.loadFromDisk();
-                //          this.loadFromWeb();
+
+                //TO-DO: for test only
+                //            if (engage.model.Ressource.publishType == engage.model.PublishType.DEBUG_AS_WEB)
+                //                this.loadFromWeb();
+                //            else
+                //                this.loadFromDisk();
+                this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
