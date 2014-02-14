@@ -10,7 +10,7 @@ var engage;
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
                     engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    engage.model.Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                    engage.model.Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
                     engage.model.Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
