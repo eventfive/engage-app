@@ -5,6 +5,7 @@ var engage;
             function Ressource() {
             }
             Ressource.setup = function (publishType) {
+                this.publishType = publishType;
                 if (publishType == engage.model.PublishType.RELEASE) {
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
                     engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
@@ -28,6 +29,8 @@ var engage;
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
             Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-map/php/upload.php";
+
+            Ressource.publishType = "";
             return Ressource;
         })();
         model.Ressource = Ressource;
@@ -3162,9 +3165,8 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-
-                //            this.loadFromDisk();
-                this.loadFromWeb();
+                this.loadFromDisk();
+                //          this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
