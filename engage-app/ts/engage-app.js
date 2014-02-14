@@ -28,7 +28,7 @@ var engage;
             Ressource.PEOPLE_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
-            Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-map/php/upload.php";
+            Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
 
             Ressource.publishType = "";
             return Ressource;
