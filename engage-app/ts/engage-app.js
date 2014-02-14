@@ -5925,7 +5925,7 @@ var engage;
                 opt.encodingType = navigator.camera.EncodingType.JPEG;
                 opt.saveToPhotoAlbum = false;
                 opt.correctOrientation = true;
-                opt.cameraDirection = navigator.camera.Direction.FRONT;
+                opt.cameraDirection = 1; //navigator.camera.Direction.FRONT;
 
                 navigator.camera.getPicture(function (img) {
                     return _this.handleCaptureSuccess(img);
