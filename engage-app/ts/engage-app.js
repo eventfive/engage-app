@@ -6009,7 +6009,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            engage.model.Ressource.setup(engage.model.PublishType.DEBUG_AS_WEB);
+            engage.model.Ressource.setup(engage.model.PublishType.RELEASE);
 
             _super.call(this, wrapper);
 
