@@ -5916,20 +5916,22 @@ var engage;
                     return;
                 }
 
+                var opt = {};
+                opt.quality = 100;
+                opt.targetWidth = 1024;
+                opt.targetHeight = 768;
+                opt.sourceType = navigator.camera.PictureSourceType.CAMERA;
+                opt.destinationType = navigator.camera.DestinationType.FILE_URI;
+                opt.encodingType = navigator.camera.EncodingType.JPEG;
+                opt.saveToPhotoAlbum = false;
+                opt.correctOrientation = true;
+                opt.cameraDirection = navigator.camera.Direction.FRONT;
+
                 navigator.camera.getPicture(function (img) {
                     return _this.handleCaptureSuccess(img);
                 }, function (msg) {
                     return _this.handleCaptureFailed(msg);
-                }, {
-                    quality: 100,
-                    targetWidth: 1024,
-                    targetHeight: 768,
-                    sourceType: navigator.camera.PictureSourceType.CAMERA,
-                    destinationType: navigator.camera.DestinationType.FILE_URI,
-                    encodingType: navigator.camera.EncodingType.JPEG,
-                    saveToPhotoAlbum: false,
-                    correctOrientation: true
-                });
+                }, opt);
             };
 
             CameraUtil.prototype.handleCaptureSuccess = function (imageURI) {
