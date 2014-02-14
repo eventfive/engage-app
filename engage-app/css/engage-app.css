@@ -2602,9 +2602,10 @@ iframe{
 	position:fixed;
 	top:0;
 	left:0;
-	z-index:1000;
+	z-index:100000;
 	display:none;
 	padding:15px;
+	overflow:scroll;
 }
 
 #people_content .label_name
@@ -2629,5 +2630,5 @@ iframe{
 
 #people_content .image
 {
-		
+	max-height: 200px;
 }
