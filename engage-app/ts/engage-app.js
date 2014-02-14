@@ -8,19 +8,19 @@ var engage;
                 this.publishType = publishType;
                 if (publishType == engage.model.PublishType.RELEASE) {
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                    engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     engage.model.Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
                     engage.model.Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
                     engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                    engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
                     engage.model.Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
                     engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
-                    engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
                     engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
                     engage.model.Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
@@ -28,7 +28,7 @@ var engage;
             };
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
             Ressource.MEDIA_PATH = "/assets/best_practices/";
-            Ressource.PEOPLE_PATH = "/assets/best_practices/";
+            Ressource.PEOPLE_MEDIA_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
             Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
@@ -3189,6 +3189,7 @@ var engage;
                 var l = this.data.media.length;
                 for (var i = 0; i < l; ++i) {
                     var media = this.data.media[i];
+                    media.fileName = media.path;
                     media.path = engage.model.Ressource.MEDIA_PATH + media.path;
                 }
 
@@ -3934,14 +3935,12 @@ var engage;
                 var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
                 this._map.setMaxBounds(maxBounds);
 
-                //add the map layer
-                var tileLayerAttr = {
-                    attribution: ' Tiles: &copy; Esri arcgisonline.com',
-                    minZoom: 4,
-                    maxZoom: 10
-                };
+                var tileOpt = {};
+                tileOpt.attribution = ' Tiles: &copy; Esri arcgisonline.com';
+                tileOpt.minZoom = 4;
+                tileOpt.maxZoom = 10;
 
-                this._baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileLayerAttr);
+                this._baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
                 this._map.addLayer(this._baseLayer);
 
                 //add a layer holding all markers
@@ -5444,6 +5443,7 @@ var engage;
             PeopleContent.prototype.update = function (data) {
                 this.nameElement.text(data.name);
                 this.commentElement.text(data.comment);
+                this.imageElement.attr("src", engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + data.media.fileName);
                 this.open();
             };
             return PeopleContent;
@@ -5639,12 +5639,11 @@ var engage;
                 this.marker.setIcon(icon);
                 this.map.markerLayer.addLayer(this.marker);
 
-                //console.log(this.data.media.path);
                 var popOpt = {};
                 popOpt.closeButton = false;
                 popOpt.maxWidth = 39;
                 popOpt.minWidth = 39;
-                this.marker.bindPopup("<img class='popup_icon' data-id='" + this.data.id + "' src='" + this.data.media.path + "' />", popOpt);
+                this.marker.bindPopup("<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />", popOpt);
             };
             return PeopleMarker;
         })();
@@ -5668,11 +5667,10 @@ var engage;
                 var initialPosition = new L.LatLng(51.53534, 7.760203);
 
                 //add the map layer
-                var tileLayerAttr = {
-                    attribution: ' Tiles: &copy; Esri arcgisonline.com',
-                    minZoom: 4,
-                    maxZoom: 10
-                };
+                var tileOpt = {};
+                tileOpt.attribution = ' Tiles: &copy; Esri arcgisonline.com';
+                tileOpt.minZoom = 4;
+                tileOpt.maxZoom = 10;
 
                 this.map = new L.Map(this.element[0]);
                 this.map.setView(initialPosition, 4);
@@ -5681,9 +5679,7 @@ var engage;
                 this.map.scrollWheelZoom.enable();
                 this.map.zoomControl.removeFrom(this.map);
 
-                //            var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
-                //            this.map.setMaxBounds(maxBounds);
-                var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileLayerAttr);
+                var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
                 this.map.addLayer(_baseLayer);
 
                 this.markerLayer = new L.LayerGroup();
@@ -5693,7 +5689,7 @@ var engage;
                     return _this.refresh();
                 });
 
-                //for test only
+                //add all people marker
                 var pd = this.app.manager.data.people_data;
                 var l = pd.length;
                 for (var i = 0; i < l; ++i) {
@@ -5703,7 +5699,6 @@ var engage;
 
             PeopleMap.prototype.refresh = function () {
                 var _this = this;
-                //e5.ui.Toast.show({message:"REFRESH LL SIZE", duration:1000});
                 setTimeout(function () {
                     return _this.map.invalidateSize(false);
                 }, 50);
@@ -5896,7 +5891,8 @@ var engage;
                 this.camera.capture();
 
                 //for test in desktop browser
-                //            this.camera.onCaptureSuccess.dispatch();
+                //forces camera enabling
+                //this.camera.onCaptureSuccess.dispatch();
                 return false;
             };
             return PeoplePage;
