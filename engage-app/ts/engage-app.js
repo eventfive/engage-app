@@ -4,10 +4,30 @@ var engage;
         var Ressource = (function () {
             function Ressource() {
             }
+            Ressource.setup = function (publishType) {
+                if (publishType == engage.model.PublishType.RELEASE) {
+                    engage.model.Ressource.ASSET_PATH = "engage-app/assets";
+                    engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
+                    engage.model.Ressource.ASSET_PATH = "engage-app/assets";
+                    engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
+                } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
+                    engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
+                    engage.model.Ressource.PEOPLE_PATH = "/eventfive/web/engage-app/php/media";
+                    engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                }
+            };
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
             Ressource.MEDIA_PATH = "/assets/best_practices/";
+            Ressource.PEOPLE_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
+            Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-map/php/upload.php";
             return Ressource;
         })();
         model.Ressource = Ressource;
@@ -2766,6 +2786,9 @@ var e5;
                 }
             };
 
+            //        public static showText(message:String, duration:number): void {
+            //            e5.ui.Toast.show({message:message, duration:duration});
+            //        }
             Toast.show = function (setting) {
                 //skip if no message defined
                 if (!setting.message)
@@ -3107,6 +3130,14 @@ var engage;
                 for (var i = 0; i < l; ++i) {
                     item = this.data.people_data[i];
                     item.media = this.resolveById('media', item.media);
+                    item.hasLocation = (item.latitude != 0 && item.longitude != 0);
+                    if (!item.hasLocation) {
+                        //Brüssel coordinates: 50.852775,4.348984
+                        var rangeLat = 0.4 * Math.random() - 0.2;
+                        var rangeLng = 0.4 * Math.random() - 0.2;
+                        item.latitude = 50.852775 + rangeLat;
+                        item.longitude = 4.348984 + rangeLng;
+                    }
                 }
             };
             BaseDataManager.prototype.resolve_ui_label = function () {
@@ -3131,8 +3162,9 @@ var engage;
                 _super.call(this);
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
-                this.loadFromDisk();
-                //            this.loadFromWeb();
+
+                //            this.loadFromDisk();
+                this.loadFromWeb();
             }
             DataManager.prototype.finalize = function () {
                 //resolve labals
@@ -5363,6 +5395,55 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
+    (function (page) {
+        var PeopleContent = (function () {
+            function PeopleContent(app) {
+                var _this = this;
+                this.app = app;
+                this.element = $("<div id='people_content'></div>");
+
+                //close button
+                this.closeButton = $("<div class='close_project_preview'></div>");
+                this.closeButton.css({ display: "block", height: "40px" });
+                this.closeButton.bind("click", function () {
+                    return _this.close();
+                });
+                this.element.append(this.closeButton);
+
+                //image
+                this.imageElement = $("<img class='image' />");
+                this.element.append(this.imageElement);
+
+                //name
+                this.element.append("<p class='label_name'>Name</p>");
+                this.nameElement = $("<p class='name'></p>");
+                this.element.append(this.nameElement);
+
+                //comment
+                this.element.append("<p class='label_comment'>Comment</p>");
+                this.commentElement = $("<p class='comment'></p>");
+                this.element.append(this.commentElement);
+            }
+            PeopleContent.prototype.close = function () {
+                this.element.css("display", "none");
+            };
+            PeopleContent.prototype.open = function () {
+                this.element.css("display", "block");
+            };
+
+            PeopleContent.prototype.update = function (data) {
+                this.nameElement.text(data.name);
+                this.commentElement.text(data.comment);
+                this.open();
+            };
+            return PeopleContent;
+        })();
+        page.PeopleContent = PeopleContent;
+    })(engage.page || (engage.page = {}));
+    var page = engage.page;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
     (function (menu) {
         var MenuHandler = (function () {
             function MenuHandler(app, container) {
@@ -5536,31 +5617,24 @@ var engage;
                 this.init();
             }
             PeopleMarker.prototype.init = function () {
-                //            var _iconSettingDefault: L.IconOptions = {
-                //                iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png",
-                //                className: "marker_icon",
-                //                iconSize: new L.Point(20, 28),
-                //                iconAnchor: new L.Point(9, 23)
-                //            };
-                //            console.log("ADD MARKER PEOPLE");
                 var iconSetting = {};
-                iconSetting.iconSize = new L.Point(31, 39);
+                iconSetting.iconSize = new L.Point(18, 18);
                 iconSetting.className = "marker_wrapper";
-                iconSetting.iconAnchor = new L.Point(15, 35);
-
-                //            iconSetting.iconUrl = engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png";
-                //            iconSetting.html = "<div class='people_marker_icon_fitzel'></div><img src='/klaus.jpg' />";
+                iconSetting.iconAnchor = new L.Point(9, 9);
                 iconSetting.html = "<div class='marker_icon'><img src='" + engage.model.Ressource.ASSET_PATH + "/people-marker.png' /></div>";
-
                 var icon = new L.DivIcon(iconSetting);
 
-                this.position = new L.LatLng(this.data.latitude, this.data.longitude); //53.867459, 20.702831);
+                this.position = new L.LatLng(this.data.latitude, this.data.longitude);
                 this.marker = new L.Marker(this.position);
                 this.marker.setIcon(icon);
-                this.marker.bindPopup("<img src='/klaus.jpg' />");
-
-                //            this.marker.bindPopup("BLUB");
                 this.map.markerLayer.addLayer(this.marker);
+
+                //console.log(this.data.media.path);
+                var popOpt = {};
+                popOpt.closeButton = false;
+                popOpt.maxWidth = 39;
+                popOpt.minWidth = 39;
+                this.marker.bindPopup("<img class='popup_icon' data-id='" + this.data.id + "' src='" + this.data.media.path + "' />", popOpt);
             };
             return PeopleMarker;
         })();
@@ -5597,8 +5671,7 @@ var engage;
                 this.map.scrollWheelZoom.enable();
                 this.map.zoomControl.removeFrom(this.map);
 
-                var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
-
+                //            var maxBounds = new L.LatLngBounds(new L.LatLng(20.138470312451155, -97.20703125), new L.LatLng(72.86793049861396, 111.97265625));
                 //            this.map.setMaxBounds(maxBounds);
                 var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileLayerAttr);
                 this.map.addLayer(_baseLayer);
@@ -5613,7 +5686,6 @@ var engage;
                 //for test only
                 var pd = this.app.manager.data.people_data;
                 var l = pd.length;
-                console.log("PEOPLE DATA LENGTH", l);
                 for (var i = 0; i < l; ++i) {
                     this._markers.push(new engage.map.PeopleMarker(this, pd[i]));
                 }
@@ -5621,6 +5693,7 @@ var engage;
 
             PeopleMap.prototype.refresh = function () {
                 var _this = this;
+                //e5.ui.Toast.show({message:"REFRESH LL SIZE", duration:1000});
                 setTimeout(function () {
                     return _this.map.invalidateSize(false);
                 }, 50);
@@ -5777,11 +5850,23 @@ var engage;
                     return _this.handleClickTakeImage();
                 });
 
+                this.content = new engage.page.PeopleContent(this.app);
+                this.element.append(this.content.element);
+
                 this.form = new engage.page.PeopleForm(this.app);
 
                 this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
                 this.camera.onUploadError.add(this.handleUploadError, this);
                 this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
+                this.element.on("click", ".popup_icon", function (evt) {
+                    return _this.handleClickPopups(evt);
+                });
+            };
+
+            PeoplePage.prototype.handleClickPopups = function (evt) {
+                var peopleDataId = parseInt($(evt.target).attr("data-id"));
+                var data = this.app.manager.data.people_data.id(peopleDataId);
+                this.content.update(data);
             };
 
             PeoplePage.prototype.handleCaptureSuccess = function () {
@@ -5886,7 +5971,7 @@ var engage;
                 };
 
                 var ft = new FileTransfer();
-                ft.upload(imageURI, encodeURI("http://192.168.1.26/eventfive/web/engage-map/php/upload.php"), function (r) {
+                ft.upload(imageURI, encodeURI(engage.model.Ressource.UPLOAD_URL), function (r) {
                     return _this.handleUploadSuccess(r);
                 }, function (r) {
                     return _this.handleUploadFailed(r);
@@ -5916,21 +6001,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            var publishType = engage.model.PublishType.RELEASE;
-
-            if (publishType == engage.model.PublishType.RELEASE) {
-                engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                engage.model.Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
-            } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
-                engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
-            } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
-                engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
-                engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-            }
+            engage.model.Ressource.setup(engage.model.PublishType.RELEASE);
 
             _super.call(this, wrapper);
 
