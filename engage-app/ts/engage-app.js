@@ -6,29 +6,35 @@ var engage;
             }
             Ressource.setup = function (publishType) {
                 this.publishType = publishType;
-                if (publishType == engage.model.PublishType.RELEASE) {
-                    engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
-                    engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    engage.model.Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
-                    engage.model.Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
+                if (publishType == engage.model.PublishType.RELEASE_APP) {
+                    Ressource.ASSET_PATH = "engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
+                } else if (publishType == engage.model.PublishType.RELEASE_WEB) {
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/assets/best_practices/";
+                    Ressource.MEDIA_PATH = "/assets/best_practices/";
+                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
-                    engage.model.Ressource.ASSET_PATH = "engage-app/assets";
-                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
-                    engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    engage.model.Ressource.CLOUD_DATA_REQUEST = "data.init.json";
-                    engage.model.Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+                    Ressource.ASSET_PATH = "engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "data.init.json";
+                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
-                    engage.model.Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
-                    engage.model.Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
-                    engage.model.Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    engage.model.Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-                    engage.model.Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 }
             };
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
-            Ressource.MEDIA_PATH = "/assets/best_practices/";
             Ressource.PEOPLE_MEDIA_PATH = "/assets/best_practices/";
+            Ressource.MEDIA_PATH = "/assets/best_practices/";
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
             Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
@@ -2881,6 +2887,22 @@ var e5;
 var engage;
 (function (engage) {
     (function (model) {
+        var PublishType = (function () {
+            function PublishType() {
+            }
+            PublishType.RELEASE_APP = "releaseApp";
+            PublishType.RELEASE_WEB = "releaseWeb";
+            PublishType.DEBUG_AS_APP = "debugAsApp";
+            PublishType.DEBUG_AS_WEB = "debugAsWeb";
+            return PublishType;
+        })();
+        model.PublishType = PublishType;
+    })(engage.model || (engage.model = {}));
+    var model = engage.model;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (model) {
         var BaseDataManager = (function () {
             function BaseDataManager(currentLanguageCode) {
                 if (typeof currentLanguageCode === "undefined") { currentLanguageCode = 'de'; }
@@ -5389,21 +5411,6 @@ $(window).ready(function () {
 });
 var engage;
 (function (engage) {
-    (function (model) {
-        var PublishType = (function () {
-            function PublishType() {
-            }
-            PublishType.RELEASE = "release";
-            PublishType.DEBUG_AS_APP = "debugAsApp";
-            PublishType.DEBUG_AS_WEB = "debugAsWeb";
-            return PublishType;
-        })();
-        model.PublishType = PublishType;
-    })(engage.model || (engage.model = {}));
-    var model = engage.model;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
     (function (page) {
         var PeopleContent = (function () {
             function PeopleContent(app) {
@@ -5643,7 +5650,15 @@ var engage;
                 popOpt.closeButton = false;
                 popOpt.maxWidth = 39;
                 popOpt.minWidth = 39;
-                this.marker.bindPopup("<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />", popOpt);
+
+                var realImage = "<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />";
+
+                //var loaderImage = "<img class='popup_loader' src='"+engage.model.Ressource.ASSET_PATH+ "/people-loader.gif' />";
+                this.marker.bindPopup(realImage, popOpt);
+            };
+
+            PeopleMarker.prototype.openPopup = function () {
+                this.marker.openPopup();
             };
             return PeopleMarker;
         })();
@@ -5658,6 +5673,9 @@ var engage;
             function PeopleMap(app) {
                 this.app = app;
                 this._markers = [];
+                this._actionTimeout = -1;
+                this._randomEnabled = false;
+                this._randomInterval = -1;
                 this.init();
             }
             PeopleMap.prototype.init = function () {
@@ -5695,6 +5713,45 @@ var engage;
                 for (var i = 0; i < l; ++i) {
                     this._markers.push(new engage.map.PeopleMarker(this, pd[i]));
                 }
+
+                this.element.bind("click mousedown", function () {
+                    return _this.onAction();
+                });
+                this.map.on("click mousedown dragstart", function () {
+                    return _this.onAction();
+                });
+                this.onAction();
+            };
+
+            PeopleMap.prototype.onAction = function () {
+                var _this = this;
+                clearTimeout(this._actionTimeout);
+                this.enableRandom(false);
+
+                //wait 10 seconds for no-action
+                //than start the random open process
+                this._actionTimeout = setTimeout(function () {
+                    return _this.enableRandom(true);
+                }, 10000);
+            };
+
+            PeopleMap.prototype.enableRandom = function (enabled) {
+                var _this = this;
+                if (this._randomEnabled == enabled)
+                    return;
+                this._randomEnabled = enabled;
+                if (enabled)
+                    this._randomInterval = setInterval(function () {
+                        return _this.openRandomMarkerPopup();
+                    }, 4000);
+                else
+                    clearInterval(this._randomInterval);
+            };
+
+            PeopleMap.prototype.openRandomMarkerPopup = function () {
+                var idx = Math.round(Math.random() * (this._markers.length - 1));
+                var marker = this._markers[idx];
+                marker.openPopup();
             };
 
             PeopleMap.prototype.refresh = function () {
@@ -6009,7 +6066,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            engage.model.Ressource.setup(engage.model.PublishType.RELEASE);
+            engage.model.Ressource.setup(engage.model.PublishType.RELEASE_APP);
 
             _super.call(this, wrapper);
 

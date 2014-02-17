@@ -2476,11 +2476,23 @@ iframe{
 #people_map .leaflet-popup-content {
 	margin: 3px;
 	margin-bottom: 0;
+	min-height: 40px;
+	background-image:url("../assets/people-loader.gif");
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:20px;
 }
 
 .marker_wrapper img {
 	width: 20px;
-	
+}
+
+#people_map img.popup_loader {
+	position: absolute;
+	width:20px;
+	height:20px;
+	margin-top:2px;
+	margin-left:2px;
 }
 
 /* .people_marker_icon {
