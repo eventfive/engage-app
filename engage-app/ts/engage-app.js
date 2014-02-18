@@ -8,21 +8,21 @@ var engage;
                 this.publishType = publishType;
                 if (publishType == engage.model.PublishType.RELEASE_APP) {
                     Ressource.ASSET_PATH = "engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "http://engage-interreg.eu/engage-app/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-app/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "http://engage-interreg.eu/engage-app/upload.php";
+                } else if (publishType == engage.model.PublishType.LOCAL) {
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
                     Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json"; //"http://engage-interreg.eu/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.RELEASE_WEB) {
                     Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "/assets/best_practices/";
                     Ressource.MEDIA_PATH = "/assets/best_practices/";
                     Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.DEBUG_AS_APP) {
-                    Ressource.ASSET_PATH = "engage-app/assets";
-                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
-                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    Ressource.CLOUD_DATA_REQUEST = "data.init.json";
                     Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
                 } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
                     Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
@@ -2890,9 +2890,9 @@ var engage;
         var PublishType = (function () {
             function PublishType() {
             }
+            PublishType.LOCAL = "local";
             PublishType.RELEASE_APP = "releaseApp";
             PublishType.RELEASE_WEB = "releaseWeb";
-            PublishType.DEBUG_AS_APP = "debugAsApp";
             PublishType.DEBUG_AS_WEB = "debugAsWeb";
             return PublishType;
         })();
