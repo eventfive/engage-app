@@ -2616,10 +2616,11 @@ iframe{
 	z-index: 2000;
 	max-width: 100%;
 	max-height: 100%;
+	vertical-align:middle;
 }
 
 .people_pre_container .background {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	right: 0;
 	bottom: 0;
@@ -2637,10 +2638,17 @@ iframe{
 	top: 50%;
 	left: 50%;
 	max-width: 80%;
+	vertical-align:middle;
 }
 
 .people_pre_box .title {
 	font-size: 20px;
+}
+
+.people_pre_box .cam_image {
+	width: 24px;
+	height: 24px;
+	margin:0px 5px;
 }
 
 .people_pre_box .message {

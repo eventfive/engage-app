@@ -5474,10 +5474,9 @@ var engage;
                 this.element.append(this._background);
 
                 //close
-                this._closeBtn = $("<div class='close_project_preview'></div>");
-                this._closeBtn.css("display", "block");
-                this.element.append(this._closeBtn);
-
+                //            this._closeBtn = $("<div class='close_project_preview'></div>");
+                //            this._closeBtn.css("display", "block");
+                //            this.element.append(this._closeBtn);
                 //box
                 this._box = $("<div class='people_pre_box'></div>");
                 this.element.append(this._box);
@@ -5486,29 +5485,29 @@ var engage;
                 var title = $("<p class='title'>" + this.app.manager.label("people_pre_title") + "</p>");
                 this._box.append(title);
 
+                //put the camera image into the text
+                var messageStr = this.app.manager.label("people_pre_message");
+                messageStr = messageStr.replace("$CAM_IMAGE$", "<img src='" + engage.model.Ressource.ASSET_PATH + "/people-cam.png' class='cam_image'/>");
+
                 //message
-                var message = $("<p class='message'>" + this.app.manager.label("people_pre_message") + "</p>");
+                var message = $("<p class='message'>" + messageStr + "</p>");
                 this._box.append(message);
 
                 //continue
-                this._cancelBtn = $("<button>" + this.app.manager.label("people_pre_cancel") + "</button>");
-                this._box.append(this._cancelBtn);
+                this._continueBtn = $("<button>" + this.app.manager.label("people_pre_continue") + "</button>");
+                this._box.append(this._continueBtn);
 
-                //picture
-                this._pictureBtn = $("<button>" + this.app.manager.label("people_pre_take_picture") + "</button>");
-                this._pictureBtn.css("float", "right");
-                this._box.append(this._pictureBtn);
-
+                //            //picture
+                //            this._pictureBtn = $("<button>" + this.app.manager.label("people_pre_take_picture") + "</button>");
+                //            this._pictureBtn.css("float", "right");
+                //            this._box.append(this._pictureBtn);
                 //set the listener
-                this._closeBtn.bind("click", function () {
-                    return _this.handleClickClose();
-                });
-                this._cancelBtn.bind("click", function () {
+                //            this._closeBtn.bind("click", () => this.handleClickClose());
+                this._continueBtn.bind("click", function () {
                     return _this.handleClickContinue();
                 });
-                this._pictureBtn.bind("click", function () {
-                    return _this.handleClickTakePicture();
-                });
+
+                //            this._pictureBtn.bind("click", () => this.handleClickTakePicture());
                 this._background.bind("click", function () {
                     return _this.handleClickBackground();
                 });
@@ -5519,12 +5518,12 @@ var engage;
             PeoplePreMessage.prototype.resize = function () {
                 this._box.css("margin-left", (this._box.outerWidth(false) * -0.5) + "px");
                 this._box.css("margin-top", (this._box.outerHeight(false) * -0.5) + "px");
+                this._box.css("top", (this.element.height() * 0.5) + "px");
             };
 
-            PeoplePreMessage.prototype.handleClickClose = function () {
-                this.element.remove();
-            };
-
+            //        private handleClickClose(): void {
+            //            this.element.remove();
+            //        }
             PeoplePreMessage.prototype.handleClickContinue = function () {
                 this.element.remove();
             };
@@ -5533,11 +5532,10 @@ var engage;
                 this.element.remove();
             };
 
-            PeoplePreMessage.prototype.handleClickTakePicture = function () {
-                this.element.remove();
-                this.app.people.camera.capture();
-            };
-
+            //        private handleClickTakePicture(): void {
+            //            this.element.remove();
+            //            this.app.people.camera.capture();
+            //        }
             PeoplePreMessage.show = function (app) {
                 var msg = new PeoplePreMessage(app);
                 $("body").append(msg.element);
@@ -5891,9 +5889,7 @@ var engage;
             };
 
             PeoplePage.prototype.open = function () {
-                console.log("OPEN PEOPLE PAGE");
-                if (this._openCount >= 0) {
-                    //TODO: open pre-message
+                if (this._openCount == 0) {
                     engage.people.PeoplePreMessage.show(this.app);
                 }
                 this._openCount++;
@@ -6226,7 +6222,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            engage.model.Ressource.setup(engage.model.PublishType.RELEASE_APP);
+            engage.model.Ressource.setup(engage.model.PublishType.DEBUG_AS_WEB);
 
             _super.call(this, wrapper);
 
