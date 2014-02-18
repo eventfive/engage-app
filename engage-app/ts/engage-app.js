@@ -5889,7 +5889,7 @@ var engage;
             };
 
             PeoplePage.prototype.open = function () {
-                if (this._openCount == 0) {
+                if (this._openCount >= 0) {
                     engage.people.PeoplePreMessage.show(this.app);
                 }
                 this._openCount++;
