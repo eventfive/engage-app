@@ -5411,7 +5411,7 @@ $(window).ready(function () {
 });
 var engage;
 (function (engage) {
-    (function (page) {
+    (function (people) {
         var PeopleContent = (function () {
             function PeopleContent(app) {
                 var _this = this;
@@ -5455,9 +5455,463 @@ var engage;
             };
             return PeopleContent;
         })();
-        page.PeopleContent = PeopleContent;
-    })(engage.page || (engage.page = {}));
-    var page = engage.page;
+        people.PeopleContent = PeopleContent;
+    })(engage.people || (engage.people = {}));
+    var people = engage.people;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (people) {
+        var PeoplePreMessage = (function () {
+            function PeoplePreMessage(app) {
+                var _this = this;
+                this.app = app;
+                //main container
+                this.element = $("<div class='people_pre_container'></div>");
+
+                //background
+                this._background = $("<div class='background'></div>");
+                this.element.append(this._background);
+
+                //close
+                this._closeBtn = $("<div class='close_project_preview'></div>");
+                this._closeBtn.css("display", "block");
+                this.element.append(this._closeBtn);
+
+                //box
+                this._box = $("<div class='people_pre_box'></div>");
+                this.element.append(this._box);
+
+                //title
+                var title = $("<p class='title'>" + this.app.manager.label("people_pre_title") + "</p>");
+                this._box.append(title);
+
+                //message
+                var message = $("<p class='message'>" + this.app.manager.label("people_pre_message") + "</p>");
+                this._box.append(message);
+
+                //continue
+                this._cancelBtn = $("<button>" + this.app.manager.label("people_pre_cancel") + "</button>");
+                this._box.append(this._cancelBtn);
+
+                //picture
+                this._pictureBtn = $("<button>" + this.app.manager.label("people_pre_take_picture") + "</button>");
+                this._pictureBtn.css("float", "right");
+                this._box.append(this._pictureBtn);
+
+                //set the listener
+                this._closeBtn.bind("click", function () {
+                    return _this.handleClickClose();
+                });
+                this._cancelBtn.bind("click", function () {
+                    return _this.handleClickContinue();
+                });
+                this._pictureBtn.bind("click", function () {
+                    return _this.handleClickTakePicture();
+                });
+                this._background.bind("click", function () {
+                    return _this.handleClickBackground();
+                });
+                $(window).bind("resize", function () {
+                    return _this.resize();
+                });
+            }
+            PeoplePreMessage.prototype.resize = function () {
+                this._box.css("margin-left", (this._box.outerWidth(false) * -0.5) + "px");
+                this._box.css("margin-top", (this._box.outerHeight(false) * -0.5) + "px");
+            };
+
+            PeoplePreMessage.prototype.handleClickClose = function () {
+                this.element.remove();
+            };
+
+            PeoplePreMessage.prototype.handleClickContinue = function () {
+                this.element.remove();
+            };
+
+            PeoplePreMessage.prototype.handleClickBackground = function () {
+                this.element.remove();
+            };
+
+            PeoplePreMessage.prototype.handleClickTakePicture = function () {
+                this.element.remove();
+                this.app.people.camera.capture();
+            };
+
+            PeoplePreMessage.show = function (app) {
+                var msg = new PeoplePreMessage(app);
+                $("body").append(msg.element);
+                msg.resize();
+            };
+            return PeoplePreMessage;
+        })();
+        people.PeoplePreMessage = PeoplePreMessage;
+    })(engage.people || (engage.people = {}));
+    var people = engage.people;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (people) {
+        var PeopleMarker = (function () {
+            function PeopleMarker(map, data) {
+                this.map = map;
+                this.data = data;
+                this.init();
+            }
+            PeopleMarker.prototype.init = function () {
+                var iconSetting = {};
+                iconSetting.iconSize = new L.Point(18, 18);
+                iconSetting.className = "marker_wrapper";
+                iconSetting.iconAnchor = new L.Point(9, 9);
+                iconSetting.html = "<div class='marker_icon'><img src='" + engage.model.Ressource.ASSET_PATH + "/people-marker.png' /></div>";
+                var icon = new L.DivIcon(iconSetting);
+
+                this.position = new L.LatLng(this.data.latitude, this.data.longitude);
+                this.marker = new L.Marker(this.position);
+                this.marker.setIcon(icon);
+                this.map.markerLayer.addLayer(this.marker);
+
+                var popOpt = {};
+                popOpt.closeButton = false;
+                popOpt.maxWidth = 39;
+                popOpt.minWidth = 39;
+
+                var realImage = "<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />";
+
+                //var loaderImage = "<img class='popup_loader' src='"+engage.model.Ressource.ASSET_PATH+ "/people-loader.gif' />";
+                this.marker.bindPopup(realImage, popOpt);
+            };
+
+            PeopleMarker.prototype.openPopup = function () {
+                this.marker.openPopup();
+            };
+            return PeopleMarker;
+        })();
+        people.PeopleMarker = PeopleMarker;
+    })(engage.people || (engage.people = {}));
+    var people = engage.people;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (people) {
+        var PeopleMap = (function () {
+            function PeopleMap(app) {
+                this.app = app;
+                this._markers = [];
+                this._actionTimeout = -1;
+                this._randomEnabled = false;
+                this._randomInterval = -1;
+                this.init();
+            }
+            PeopleMap.prototype.init = function () {
+                var _this = this;
+                this.element = $("<div id='people_map'></div>");
+
+                var initialPosition = new L.LatLng(51.53534, 7.760203);
+
+                //add the map layer
+                var tileOpt = {};
+                tileOpt.attribution = ' Tiles: &copy; Esri arcgisonline.com';
+                tileOpt.minZoom = 4;
+                tileOpt.maxZoom = 10;
+
+                var mapOpt = {};
+                mapOpt.worldCopyJump = true;
+                mapOpt.center = initialPosition;
+                mapOpt.zoom = 4;
+
+                this.map = new L.Map(this.element[0], mapOpt);
+                this.map.touchZoom.enable();
+                this.map.dragging.enabled();
+                this.map.scrollWheelZoom.enable();
+                this.map.zoomControl.removeFrom(this.map);
+
+                var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
+                this.map.addLayer(_baseLayer);
+
+                this.markerLayer = new L.LayerGroup();
+                this.map.addLayer(this.markerLayer);
+
+                $(window).bind("resize", function () {
+                    return _this.refresh();
+                });
+
+                //add all people marker
+                var pd = this.app.manager.data.people_data;
+                var l = pd.length;
+                for (var i = 0; i < l; ++i) {
+                    this.addMarker(pd[i]);
+                }
+
+                this.element.bind("click mousedown", function () {
+                    return _this.onAction();
+                });
+                this.map.on("click mousedown dragstart", function () {
+                    return _this.onAction();
+                });
+                this.onAction();
+            };
+
+            PeopleMap.prototype.addMarker = function (data) {
+                //Brüssel coordinates: 50.852775,4.348984
+                if (data.latitude == 0 || data.longitude == 0) {
+                    var rangeLat = 0.4 * Math.random() - 0.2;
+                    var rangeLng = 0.4 * Math.random() - 0.2;
+                    data.latitude = 50.852775 + rangeLat;
+                    data.longitude = 4.348984 + rangeLng;
+                    data.hasLocation = false;
+                } else
+                    data.hasLocation = true;
+                this._markers.push(new engage.people.PeopleMarker(this, data));
+            };
+
+            PeopleMap.prototype.onAction = function () {
+                var _this = this;
+                clearTimeout(this._actionTimeout);
+                this.enableRandom(false);
+
+                //wait 10 seconds for no-action
+                //than start the random open process
+                this._actionTimeout = setTimeout(function () {
+                    return _this.enableRandom(true);
+                }, 8000);
+            };
+
+            PeopleMap.prototype.enableRandom = function (enabled) {
+                var _this = this;
+                if (this._randomEnabled == enabled)
+                    return;
+                this._randomEnabled = enabled;
+                if (enabled)
+                    this._randomInterval = setInterval(function () {
+                        return _this.openRandomMarkerPopup();
+                    }, 4000);
+                else
+                    clearInterval(this._randomInterval);
+            };
+
+            PeopleMap.prototype.openRandomMarkerPopup = function () {
+                var idx = Math.round(Math.random() * (this._markers.length - 1));
+                var marker = this._markers[idx];
+                marker.openPopup();
+            };
+
+            PeopleMap.prototype.refresh = function () {
+                var _this = this;
+                setTimeout(function () {
+                    return _this.map.invalidateSize(false);
+                }, 50);
+            };
+            return PeopleMap;
+        })();
+        people.PeopleMap = PeopleMap;
+    })(engage.people || (engage.people = {}));
+    var people = engage.people;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (people) {
+        var PeopleForm = (function () {
+            function PeopleForm(app) {
+                var _this = this;
+                this.app = app;
+                this.element = $("<div class='people_form'></div>");
+                $("body").append(this.element);
+
+                this._abort = $("<div class='abort'></div>");
+                this.element.append(this._abort);
+
+                var form = $("<form action=''></form>");
+                form.append($('<label for="name">Name</label>'));
+                this._nameInput = $("<input class='name_input' tabindex='0' name='name'></input>");
+                form.append(this._nameInput);
+
+                form.append($('<label for="comment">Comment</label>'));
+                this._commentInput = $("<textarea class='comment_input' tabindex='1' name='comment'></textarea>");
+                form.append(this._commentInput);
+
+                this._submitBtn = $("<button type='submit'>Submit</button>");
+                form.append(this._submitBtn);
+
+                this.element.append(form);
+
+                this._gps = new engage.media.GPSHandler();
+
+                this.hide();
+
+                this._abort.bind("click", function (e) {
+                    return _this.handleClickAbort(e);
+                });
+                this._submitBtn.bind("click", function (e) {
+                    return _this.handleClickSubmit(e);
+                });
+
+                $(window).bind("resize", function () {
+                    return _this.handleResizeWindow();
+                });
+                this.handleResizeWindow();
+                //this.app.people.camera.onUploadSuccess.add(this.handleCameraUploadComplete, this);
+                //this.app.people.camera.onUploadError.add(this.handleCameraUploadComplete, this);
+            }
+            //        private handleCameraUploadComplete(): void {
+            //            this.hide();
+            //        }
+            PeopleForm.prototype.hide = function () {
+                this.element.css("display", "none");
+                this.element.removeClass("progress");
+            };
+
+            PeopleForm.prototype.show = function () {
+                this.element.css("display", "block");
+                this.resize();
+            };
+
+            PeopleForm.prototype.handleResizeWindow = function () {
+                this.resize();
+            };
+
+            PeopleForm.prototype.resize = function () {
+                var hei = $(window).height();
+                var top = this._commentInput.position().top;
+                var res = (hei - top) - 80;
+                res = Math.max(res, 60);
+                this._commentInput.css("height", res + "px");
+                this._commentInput.css("min-height", res + "px");
+                this._commentInput.css("max-height", res + "px");
+            };
+
+            PeopleForm.prototype.handleClickAbort = function (e) {
+                this.hide();
+                return false;
+            };
+
+            PeopleForm.prototype.handleClickSubmit = function (e) {
+                var _this = this;
+                e.preventDefault();
+
+                this.element.addClass("progress");
+
+                var options = {};
+                options.timeout = 12000;
+                options.enableHighAccuracy = false;
+
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    return _this.handleGeolocationSuccess(position);
+                }, function (error) {
+                    return _this.handleGeolocationError(error);
+                }, options);
+
+                return false;
+            };
+
+            PeopleForm.prototype.handleGeolocationSuccess = function (position) {
+                if (position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), lat, lng);
+                } else {
+                    //                e5.ui.Toast.show({ message: "Your GPS-position is not available. Please try again", duration: 4000 });
+                    //                this.element.removeClass("progress");
+                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
+                }
+            };
+
+            PeopleForm.prototype.handleGeolocationError = function (error) {
+                //            if (e5.core.Caps.isIOS)
+                //                e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 6000 });
+                //            else
+                //                e5.ui.Toast.show({ message: "Your GPS is disabled.", duration: 5000 });
+                //            this.element.removeClass("progress");
+                this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
+            };
+            return PeopleForm;
+        })();
+        people.PeopleForm = PeopleForm;
+    })(engage.people || (engage.people = {}));
+    var people = engage.people;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (people) {
+        var PeoplePage = (function () {
+            function PeoplePage(app) {
+                this.app = app;
+                this._openCount = 0;
+                this.init();
+            }
+            PeoplePage.prototype.init = function () {
+                var _this = this;
+                this.element = $("<div class='people_container'></div>");
+                $("#content").append(this.element);
+
+                this.camera = new engage.media.CameraUtil(this.app);
+
+                this.map = new engage.people.PeopleMap(this.app);
+                this.element.append(this.map.element);
+
+                this.btnTakeImage = $("<div class='take_image'></div>");
+                this.element.append(this.btnTakeImage);
+                this.btnTakeImage.bind("click", function (evt) {
+                    return _this.handleClickTakeImage();
+                });
+
+                this.content = new engage.people.PeopleContent(this.app);
+                this.element.append(this.content.element);
+
+                this.form = new engage.people.PeopleForm(this.app);
+
+                this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
+                this.camera.onUploadError.add(this.handleUploadError, this);
+                this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
+                this.element.on("click", ".popup_icon", function (evt) {
+                    return _this.handleClickPopups(evt);
+                });
+            };
+
+            PeoplePage.prototype.handleClickPopups = function (evt) {
+                var peopleDataId = parseInt($(evt.target).attr("data-id"));
+                var data = this.app.manager.data.people_data.id(peopleDataId);
+                this.content.update(data);
+            };
+
+            PeoplePage.prototype.handleCaptureSuccess = function () {
+                this.form.show();
+            };
+
+            PeoplePage.prototype.handleUploadSuccess = function (data) {
+                this.camera.image.remove();
+                this.form.hide();
+
+                //add the new marker
+                this.map.addMarker(data);
+            };
+
+            PeoplePage.prototype.handleUploadError = function () {
+                this.form.element.removeClass("progress");
+            };
+
+            PeoplePage.prototype.open = function () {
+                console.log("OPEN PEOPLE PAGE");
+                if (this._openCount >= 0) {
+                    //TODO: open pre-message
+                    engage.people.PeoplePreMessage.show(this.app);
+                }
+                this._openCount++;
+            };
+
+            PeoplePage.prototype.handleClickTakeImage = function () {
+                this.camera.capture();
+
+                //for test in desktop browser
+                //forces camera enabling
+                //this.camera.onCaptureSuccess.dispatch();
+                return false;
+            };
+            return PeoplePage;
+        })();
+        people.PeoplePage = PeoplePage;
+    })(engage.people || (engage.people = {}));
+    var people = engage.people;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
@@ -5607,13 +6061,13 @@ var engage;
                 this.title.text(this.app.manager.label("page_title_" + this._key));
                 this.text.html(this.app.manager.label("page_text_" + this._key));
 
+                this.container.scrollTop();
+
                 //TODO: clean this hack
                 setTimeout(function () {
                     _this.mediaSlide.resize();
                     _this.mediaSlide.show();
                 }, 500);
-
-                this.container.scrollTop();
             };
             PageHandler.prototype.handleClickItem = function (item) {
                 var lang = item.attr("data-lang");
@@ -5629,360 +6083,6 @@ var engage;
             return PageHandler;
         })();
         page.PageHandler = PageHandler;
-    })(engage.page || (engage.page = {}));
-    var page = engage.page;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (map) {
-        var PeopleMarker = (function () {
-            function PeopleMarker(map, data) {
-                this.map = map;
-                this.data = data;
-                this.init();
-            }
-            PeopleMarker.prototype.init = function () {
-                var iconSetting = {};
-                iconSetting.iconSize = new L.Point(18, 18);
-                iconSetting.className = "marker_wrapper";
-                iconSetting.iconAnchor = new L.Point(9, 9);
-                iconSetting.html = "<div class='marker_icon'><img src='" + engage.model.Ressource.ASSET_PATH + "/people-marker.png' /></div>";
-                var icon = new L.DivIcon(iconSetting);
-
-                this.position = new L.LatLng(this.data.latitude, this.data.longitude);
-                this.marker = new L.Marker(this.position);
-                this.marker.setIcon(icon);
-                this.map.markerLayer.addLayer(this.marker);
-
-                var popOpt = {};
-                popOpt.closeButton = false;
-                popOpt.maxWidth = 39;
-                popOpt.minWidth = 39;
-
-                var realImage = "<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />";
-
-                //var loaderImage = "<img class='popup_loader' src='"+engage.model.Ressource.ASSET_PATH+ "/people-loader.gif' />";
-                this.marker.bindPopup(realImage, popOpt);
-            };
-
-            PeopleMarker.prototype.openPopup = function () {
-                this.marker.openPopup();
-            };
-            return PeopleMarker;
-        })();
-        map.PeopleMarker = PeopleMarker;
-    })(engage.map || (engage.map = {}));
-    var map = engage.map;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (map) {
-        var PeopleMap = (function () {
-            function PeopleMap(app) {
-                this.app = app;
-                this._markers = [];
-                this._actionTimeout = -1;
-                this._randomEnabled = false;
-                this._randomInterval = -1;
-                this.init();
-            }
-            PeopleMap.prototype.init = function () {
-                var _this = this;
-                this.element = $("<div id='people_map'></div>");
-
-                var initialPosition = new L.LatLng(51.53534, 7.760203);
-
-                //add the map layer
-                var tileOpt = {};
-                tileOpt.attribution = ' Tiles: &copy; Esri arcgisonline.com';
-                tileOpt.minZoom = 4;
-                tileOpt.maxZoom = 10;
-
-                var mapOpt = {};
-                mapOpt.worldCopyJump = true;
-                mapOpt.center = initialPosition;
-                mapOpt.zoom = 4;
-
-                this.map = new L.Map(this.element[0], mapOpt);
-                this.map.touchZoom.enable();
-                this.map.dragging.enabled();
-                this.map.scrollWheelZoom.enable();
-                this.map.zoomControl.removeFrom(this.map);
-
-                var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
-                this.map.addLayer(_baseLayer);
-
-                this.markerLayer = new L.LayerGroup();
-                this.map.addLayer(this.markerLayer);
-
-                $(window).bind("resize", function () {
-                    return _this.refresh();
-                });
-
-                //add all people marker
-                var pd = this.app.manager.data.people_data;
-                var l = pd.length;
-                for (var i = 0; i < l; ++i) {
-                    this.addMarker(pd[i]);
-                }
-
-                this.element.bind("click mousedown", function () {
-                    return _this.onAction();
-                });
-                this.map.on("click mousedown dragstart", function () {
-                    return _this.onAction();
-                });
-                this.onAction();
-            };
-
-            PeopleMap.prototype.addMarker = function (data) {
-                //Brüssel coordinates: 50.852775,4.348984
-                if (data.latitude == 0 || data.longitude == 0) {
-                    var rangeLat = 0.4 * Math.random() - 0.2;
-                    var rangeLng = 0.4 * Math.random() - 0.2;
-                    data.latitude = 50.852775 + rangeLat;
-                    data.longitude = 4.348984 + rangeLng;
-                    data.hasLocation = false;
-                } else
-                    data.hasLocation = true;
-                this._markers.push(new engage.map.PeopleMarker(this, data));
-            };
-
-            PeopleMap.prototype.onAction = function () {
-                var _this = this;
-                clearTimeout(this._actionTimeout);
-                this.enableRandom(false);
-
-                //wait 10 seconds for no-action
-                //than start the random open process
-                this._actionTimeout = setTimeout(function () {
-                    return _this.enableRandom(true);
-                }, 10000);
-            };
-
-            PeopleMap.prototype.enableRandom = function (enabled) {
-                var _this = this;
-                if (this._randomEnabled == enabled)
-                    return;
-                this._randomEnabled = enabled;
-                if (enabled)
-                    this._randomInterval = setInterval(function () {
-                        return _this.openRandomMarkerPopup();
-                    }, 4000);
-                else
-                    clearInterval(this._randomInterval);
-            };
-
-            PeopleMap.prototype.openRandomMarkerPopup = function () {
-                var idx = Math.round(Math.random() * (this._markers.length - 1));
-                var marker = this._markers[idx];
-                marker.openPopup();
-            };
-
-            PeopleMap.prototype.refresh = function () {
-                var _this = this;
-                setTimeout(function () {
-                    return _this.map.invalidateSize(false);
-                }, 50);
-            };
-            return PeopleMap;
-        })();
-        map.PeopleMap = PeopleMap;
-    })(engage.map || (engage.map = {}));
-    var map = engage.map;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (page) {
-        var PeopleForm = (function () {
-            function PeopleForm(app) {
-                var _this = this;
-                this.app = app;
-                this.element = $("<div class='people_form'></div>");
-                $("body").append(this.element);
-
-                this._abort = $("<div class='abort'></div>");
-                this.element.append(this._abort);
-
-                var form = $("<form action=''></form>");
-                form.append($('<label for="name">Name</label>'));
-                this._nameInput = $("<input class='name_input' tabindex='0' name='name'></input>");
-                form.append(this._nameInput);
-
-                form.append($('<label for="comment">Comment</label>'));
-                this._commentInput = $("<textarea class='comment_input' tabindex='1' name='comment'></textarea>");
-                form.append(this._commentInput);
-
-                this._submitBtn = $("<button type='submit'>Submit</button>");
-                form.append(this._submitBtn);
-
-                this.element.append(form);
-
-                this._gps = new engage.media.GPSHandler();
-
-                this.hide();
-
-                this._abort.bind("click", function (e) {
-                    return _this.handleClickAbort(e);
-                });
-                this._submitBtn.bind("click", function (e) {
-                    return _this.handleClickSubmit(e);
-                });
-
-                $(window).bind("resize", function () {
-                    return _this.handleResizeWindow();
-                });
-                this.handleResizeWindow();
-                //this.app.people.camera.onUploadSuccess.add(this.handleCameraUploadComplete, this);
-                //this.app.people.camera.onUploadError.add(this.handleCameraUploadComplete, this);
-            }
-            //        private handleCameraUploadComplete(): void {
-            //            this.hide();
-            //        }
-            PeopleForm.prototype.hide = function () {
-                this.element.css("display", "none");
-                this.element.removeClass("progress");
-            };
-
-            PeopleForm.prototype.show = function () {
-                this.element.css("display", "block");
-                this.resize();
-            };
-
-            PeopleForm.prototype.handleResizeWindow = function () {
-                this.resize();
-            };
-
-            PeopleForm.prototype.resize = function () {
-                var hei = $(window).height();
-                var top = this._commentInput.position().top;
-                var res = (hei - top) - 80;
-                res = Math.max(res, 60);
-                this._commentInput.css("height", res + "px");
-                this._commentInput.css("min-height", res + "px");
-                this._commentInput.css("max-height", res + "px");
-            };
-
-            PeopleForm.prototype.handleClickAbort = function (e) {
-                this.hide();
-                return false;
-            };
-
-            PeopleForm.prototype.handleClickSubmit = function (e) {
-                var _this = this;
-                e.preventDefault();
-
-                this.element.addClass("progress");
-
-                var options = {};
-                options.timeout = 12000;
-                options.enableHighAccuracy = false;
-
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    return _this.handleGeolocationSuccess(position);
-                }, function (error) {
-                    return _this.handleGeolocationError(error);
-                }, options);
-
-                return false;
-            };
-
-            PeopleForm.prototype.handleGeolocationSuccess = function (position) {
-                if (position) {
-                    var lat = position.coords.latitude;
-                    var lng = position.coords.longitude;
-                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), lat, lng);
-                } else {
-                    //                e5.ui.Toast.show({ message: "Your GPS-position is not available. Please try again", duration: 4000 });
-                    //                this.element.removeClass("progress");
-                    this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
-                }
-            };
-
-            PeopleForm.prototype.handleGeolocationError = function (error) {
-                //            if (e5.core.Caps.isIOS)
-                //                e5.ui.Toast.show({ message: "Your GPS is disabled. To enabled GPS for this application you have to configure it in your 'settings'-app under privacy.", duration: 6000 });
-                //            else
-                //                e5.ui.Toast.show({ message: "Your GPS is disabled.", duration: 5000 });
-                //            this.element.removeClass("progress");
-                this.app.people.camera.upload(this._nameInput.val(), this._commentInput.val(), 0, 0);
-            };
-            return PeopleForm;
-        })();
-        page.PeopleForm = PeopleForm;
-    })(engage.page || (engage.page = {}));
-    var page = engage.page;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (page) {
-        var PeoplePage = (function () {
-            function PeoplePage(app) {
-                this.app = app;
-                this.init();
-            }
-            PeoplePage.prototype.init = function () {
-                var _this = this;
-                this.element = $("<div class='people_container'></div>");
-                $("#content").append(this.element);
-
-                this.camera = new engage.media.CameraUtil(this.app);
-
-                this.map = new engage.map.PeopleMap(this.app);
-                this.element.append(this.map.element);
-
-                this.btnTakeImage = $("<div class='take_image'></div>");
-                this.element.append(this.btnTakeImage);
-                this.btnTakeImage.bind("click", function (evt) {
-                    return _this.handleClickTakeImage();
-                });
-
-                this.content = new engage.page.PeopleContent(this.app);
-                this.element.append(this.content.element);
-
-                this.form = new engage.page.PeopleForm(this.app);
-
-                this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
-                this.camera.onUploadError.add(this.handleUploadError, this);
-                this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
-                this.element.on("click", ".popup_icon", function (evt) {
-                    return _this.handleClickPopups(evt);
-                });
-            };
-
-            PeoplePage.prototype.handleClickPopups = function (evt) {
-                var peopleDataId = parseInt($(evt.target).attr("data-id"));
-                var data = this.app.manager.data.people_data.id(peopleDataId);
-                this.content.update(data);
-            };
-
-            PeoplePage.prototype.handleCaptureSuccess = function () {
-                this.form.show();
-            };
-
-            PeoplePage.prototype.handleUploadSuccess = function (data) {
-                this.camera.image.remove();
-                this.form.hide();
-
-                //add the new marker
-                this.map.addMarker(data);
-            };
-
-            PeoplePage.prototype.handleUploadError = function () {
-                this.form.element.removeClass("progress");
-            };
-
-            PeoplePage.prototype.handleClickTakeImage = function () {
-                this.camera.capture();
-
-                //for test in desktop browser
-                //forces camera enabling
-                //this.camera.onCaptureSuccess.dispatch();
-                return false;
-            };
-            return PeoplePage;
-        })();
-        page.PeoplePage = PeoplePage;
     })(engage.page || (engage.page = {}));
     var page = engage.page;
 })(engage || (engage = {}));
@@ -6126,7 +6226,7 @@ var engage;
         function MobileApplication(wrapper) {
             $.support.cors = true;
 
-            engage.model.Ressource.setup(engage.model.PublishType.RELEASE_APP);
+            engage.model.Ressource.setup(engage.model.PublishType.DEBUG_AS_WEB);
 
             _super.call(this, wrapper);
 
@@ -6184,7 +6284,7 @@ var engage;
             if (this.projectPreview.getIsOpen())
                 this.handlePreviewOpen();
 
-            this.people = new engage.page.PeoplePage(this);
+            this.people = new engage.people.PeoplePage(this);
 
             //TODO: dirty hack
             $(window).bind("keyboardresize", function () {
@@ -6226,6 +6326,7 @@ var engage;
             $("body").removeClass("map page");
             $("body").addClass("people");
             this.people.map.refresh();
+            this.people.open();
         };
         MobileApplication.prototype.handleClickLink = function (link, e) {
             window.open(link.attr("href"), '_system');
