@@ -5598,6 +5598,7 @@ var engage;
                 });
             };
             PageHandler.prototype.load = function (key) {
+                var _this = this;
                 if (this._key == key)
                     return;
                 this._key = key;
@@ -5605,6 +5606,13 @@ var engage;
                     this.mediaSlide.load(this.app.manager.getPageByKey(this._key).media);
                 this.title.text(this.app.manager.label("page_title_" + this._key));
                 this.text.html(this.app.manager.label("page_text_" + this._key));
+
+                //TODO: clean this hack
+                setTimeout(function () {
+                    _this.mediaSlide.resize();
+                    _this.mediaSlide.show();
+                }, 500);
+
                 this.container.scrollTop();
             };
             PageHandler.prototype.handleClickItem = function (item) {
@@ -5690,8 +5698,12 @@ var engage;
                 tileOpt.minZoom = 4;
                 tileOpt.maxZoom = 10;
 
-                this.map = new L.Map(this.element[0]);
-                this.map.setView(initialPosition, 4);
+                var mapOpt = {};
+                mapOpt.worldCopyJump = true;
+                mapOpt.center = initialPosition;
+                mapOpt.zoom = 4;
+
+                this.map = new L.Map(this.element[0], mapOpt);
                 this.map.touchZoom.enable();
                 this.map.dragging.enabled();
                 this.map.scrollWheelZoom.enable();
@@ -5711,7 +5723,7 @@ var engage;
                 var pd = this.app.manager.data.people_data;
                 var l = pd.length;
                 for (var i = 0; i < l; ++i) {
-                    this._markers.push(new engage.map.PeopleMarker(this, pd[i]));
+                    this.addMarker(pd[i]);
                 }
 
                 this.element.bind("click mousedown", function () {
@@ -5721,6 +5733,10 @@ var engage;
                     return _this.onAction();
                 });
                 this.onAction();
+            };
+
+            PeopleMap.prototype.addMarker = function (data) {
+                this._markers.push(new engage.map.PeopleMarker(this, data));
             };
 
             PeopleMap.prototype.onAction = function () {
@@ -5901,7 +5917,7 @@ var engage;
                 this.element = $("<div class='people_container'></div>");
                 $("#content").append(this.element);
 
-                this.camera = new engage.media.CameraUtil();
+                this.camera = new engage.media.CameraUtil(this.app);
 
                 this.map = new engage.map.PeopleMap(this.app);
                 this.element.append(this.map.element);
@@ -5935,9 +5951,12 @@ var engage;
                 this.form.show();
             };
 
-            PeoplePage.prototype.handleUploadSuccess = function () {
+            PeoplePage.prototype.handleUploadSuccess = function (data) {
                 this.camera.image.remove();
                 this.form.hide();
+
+                //add the new marker
+                this.map.addMarker(data);
             };
 
             PeoplePage.prototype.handleUploadError = function () {
@@ -5962,13 +5981,16 @@ var engage;
 (function (engage) {
     (function (media) {
         var CameraUtil = (function () {
-            function CameraUtil() {
+            function CameraUtil(app) {
+                this.app = app;
                 this.onUploadSuccess = new e5.core.Signal();
                 this.onUploadError = new e5.core.Signal();
                 this.onCaptureSuccess = new e5.core.Signal();
                 this.onCaptureError = new e5.core.Signal();
                 this.image = null;
                 this.imageURI = null;
+                this._newMedia = null;
+                this._newData = null;
             }
             CameraUtil.prototype.capture = function () {
                 var _this = this;
@@ -6017,6 +6039,16 @@ var engage;
                 var _this = this;
                 e5.ui.Toast.show({ message: "Upload data... please wait" });
 
+                this._newData = {
+                    id: Math.round(Math.random() * 100),
+                    name: name,
+                    comment: comment,
+                    latitude: latitude,
+                    longitude: longitude,
+                    media: null,
+                    hasLocation: latitude != 0 && longitude != 0
+                };
+
                 var imageURI = this.imageURI;
 
                 var params = new Object();
@@ -6044,9 +6076,27 @@ var engage;
             };
 
             CameraUtil.prototype.handleUploadSuccess = function (r) {
+                var resp = JSON.parse(r.response);
+
+                if (this._newData) {
+                    this._newData.latitude = resp.latitude;
+                    this._newData.longitude = resp.longitude;
+                    this._newMedia = {
+                        id: resp.mediaId,
+                        title: "",
+                        type: "image",
+                        path: engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + resp.path,
+                        fileName: resp.fileName
+                    };
+                    this._newData.media = this._newMedia;
+
+                    this.app.manager.data.media.push(this._newMedia);
+                    this.app.manager.data.people_data.push(this._newData);
+                }
+
                 e5.ui.Toast.show({ message: "Your image is successfully uploaded" });
-                e5.ui.Toast.show({ message: r.response, duration: 3000, allowClose: true });
-                this.onUploadSuccess.dispatch();
+                e5.ui.Toast.show({ message: resp.message, duration: 3000, allowClose: true });
+                this.onUploadSuccess.dispatch(this._newData);
             };
 
             CameraUtil.prototype.handleUploadFailed = function (r) {
