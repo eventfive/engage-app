@@ -3159,13 +3159,13 @@ var engage;
                     item = this.data.people_data[i];
                     item.media = this.resolveById('media', item.media);
                     item.hasLocation = (item.latitude != 0 && item.longitude != 0);
-                    if (!item.hasLocation) {
-                        //Brüssel coordinates: 50.852775,4.348984
-                        var rangeLat = 0.4 * Math.random() - 0.2;
-                        var rangeLng = 0.4 * Math.random() - 0.2;
-                        item.latitude = 50.852775 + rangeLat;
-                        item.longitude = 4.348984 + rangeLng;
-                    }
+                    //                if (!item.hasLocation) {
+                    //                    //Brüssel coordinates: 50.852775,4.348984
+                    //                    var rangeLat: number = 0.4 * Math.random() - 0.2;
+                    //                    var rangeLng: number = 0.4 * Math.random() - 0.2;
+                    //                    item.latitude = 50.852775 + rangeLat;
+                    //                    item.longitude = 4.348984 + rangeLng;
+                    //                }
                 }
             };
             BaseDataManager.prototype.resolve_ui_label = function () {
@@ -5736,6 +5736,15 @@ var engage;
             };
 
             PeopleMap.prototype.addMarker = function (data) {
+                //Brüssel coordinates: 50.852775,4.348984
+                if (data.latitude == 0 || data.longitude == 0) {
+                    var rangeLat = 0.4 * Math.random() - 0.2;
+                    var rangeLng = 0.4 * Math.random() - 0.2;
+                    data.latitude = 50.852775 + rangeLat;
+                    data.longitude = 4.348984 + rangeLng;
+                    data.hasLocation = false;
+                } else
+                    data.hasLocation = true;
                 this._markers.push(new engage.map.PeopleMarker(this, data));
             };
 
@@ -6081,6 +6090,7 @@ var engage;
                 if (this._newData) {
                     this._newData.latitude = resp.latitude;
                     this._newData.longitude = resp.longitude;
+
                     this._newMedia = {
                         id: resp.mediaId,
                         title: "",
