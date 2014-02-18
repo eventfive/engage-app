@@ -5498,16 +5498,18 @@ var engage;
                 this._box.append(this._continueBtn);
 
                 //            //picture
-                //            this._pictureBtn = $("<button>" + this.app.manager.label("people_pre_take_picture") + "</button>");
-                //            this._pictureBtn.css("float", "right");
-                //            this._box.append(this._pictureBtn);
+                this._pictureBtn = $("<button>" + this.app.manager.label("people_pre_take_picture") + "</button>");
+                this._pictureBtn.css("float", "right");
+                this._box.append(this._pictureBtn);
+
                 //set the listener
                 //            this._closeBtn.bind("click", () => this.handleClickClose());
                 this._continueBtn.bind("click", function () {
                     return _this.handleClickContinue();
                 });
-
-                //            this._pictureBtn.bind("click", () => this.handleClickTakePicture());
+                this._pictureBtn.bind("click", function () {
+                    return _this.handleClickTakePicture();
+                });
                 this._background.bind("click", function () {
                     return _this.handleClickBackground();
                 });
@@ -5532,10 +5534,11 @@ var engage;
                 this.element.remove();
             };
 
-            //        private handleClickTakePicture(): void {
-            //            this.element.remove();
-            //            this.app.people.camera.capture();
-            //        }
+            PeoplePreMessage.prototype.handleClickTakePicture = function () {
+                this.element.remove();
+                this.app.people.camera.capture();
+            };
+
             PeoplePreMessage.show = function (app) {
                 var msg = new PeoplePreMessage(app);
                 $("body").append(msg.element);

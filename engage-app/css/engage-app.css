@@ -2643,6 +2643,7 @@ iframe{
 
 .people_pre_box .title {
 	font-size: 20px;
+	text-align:center;
 }
 
 .people_pre_box .cam_image {
@@ -2653,6 +2654,7 @@ iframe{
 
 .people_pre_box .message {
 	font-size: 16px;
+	text-align:center;
 }
 
 .people_pre_box button {
@@ -2663,6 +2665,7 @@ iframe{
 	border: 2px groove #000;
 	padding: 10px;
 	font-weight: bold;
+	width: 100px;
 }
 #people_content
 {
