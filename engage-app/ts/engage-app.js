@@ -1,51 +1,3 @@
-var engage;
-(function (engage) {
-    (function (model) {
-        var Ressource = (function () {
-            function Ressource() {
-            }
-            Ressource.setup = function (publishType) {
-                this.publishType = publishType;
-                if (publishType == engage.model.PublishType.RELEASE_APP) {
-                    Ressource.ASSET_PATH = "engage-app/assets";
-                    Ressource.PEOPLE_MEDIA_PATH = "http://engage-interreg.eu/engage-app/media";
-                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-app/Service.php?operation=export&out=json";
-                    Ressource.UPLOAD_URL = "http://engage-interreg.eu/engage-app/upload.php";
-                } else if (publishType == engage.model.PublishType.LOCAL) {
-                    Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
-                    Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
-                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-                    Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.RELEASE_WEB) {
-                    Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
-                    Ressource.PEOPLE_MEDIA_PATH = "/assets/best_practices/";
-                    Ressource.MEDIA_PATH = "/assets/best_practices/";
-                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.DEBUG_AS_WEB) {
-                    Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
-                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
-                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
-                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-                }
-            };
-            Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
-            Ressource.PEOPLE_MEDIA_PATH = "/assets/best_practices/";
-            Ressource.MEDIA_PATH = "/assets/best_practices/";
-            Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-            Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
-            Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-
-            Ressource.publishType = "";
-            return Ressource;
-        })();
-        model.Ressource = Ressource;
-    })(engage.model || (engage.model = {}));
-    var model = engage.model;
-})(engage || (engage = {}));
 Array.prototype.id = function (id) {
     var l = this.length;
     for (var i = 0; i < l; ++i)
@@ -85,6 +37,7 @@ if (!Array.prototype.indexOf) {
 var cons = "console";
 if (!window.console)
     window[cons] = { log: function () {
+        }, warn: function () {
         } };
 var e5;
 (function (e5) {
@@ -590,6 +543,24 @@ var e5;
                 var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                 for (var i = 0; i < length; ++i)
                     text += possible.charAt(Math.floor(Math.random() * possible.length));
+                return text;
+            };
+
+            Text.fill = function (text, maxLength, fillChar) {
+                if (text.length >= maxLength)
+                    return text;
+
+                for (var j = text.length; j < maxLength; ++j)
+                    text += fillChar.charAt(0);
+                return text;
+            };
+
+            Text.fillHead = function (text, maxLength, fillChar) {
+                if (text.length >= maxLength)
+                    return text;
+
+                for (var i = text.length; i < maxLength; ++i)
+                    text = fillChar.charAt(0) + text;
                 return text;
             };
             Text.MONTH_EN = [
@@ -2890,16 +2861,92 @@ var engage;
         var PublishType = (function () {
             function PublishType() {
             }
-            PublishType.LOCAL = "local";
-            PublishType.RELEASE_APP = "releaseApp";
-            PublishType.RELEASE_WEB = "releaseWeb";
-            PublishType.DEBUG_AS_WEB = "debugAsWeb";
+            PublishType.DEBUG_NETWORK = "debugNetwork";
+            PublishType.RELEASE_ENGAGE_APP = "releaseEngageApp";
+            PublishType.RELEASE_ENGAGE_MAP = "releaseEngageMap";
+            PublishType.DEBUG_BROWSER = "debugBrowser";
+            PublishType.DEBUG_SERVER = "debugServer";
+            PublishType.ADMIN = "admin";
+            PublishType.RELEASE_ENGAGE_SELFIE = "releaseSelfie";
             return PublishType;
         })();
         model.PublishType = PublishType;
     })(engage.model || (engage.model = {}));
     var model = engage.model;
 })(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (model) {
+        var Ressource = (function () {
+            function Ressource() {
+            }
+            Ressource.setup = function (publishType) {
+                Ressource.publishType = publishType;
+
+                //            console.log("SET PUBLISH TYPE", publishType);
+                if (publishType == engage.model.PublishType.RELEASE_ENGAGE_APP) {
+                    Ressource.ASSET_PATH = "engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "http://engage-interreg.eu/engage-app/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-app/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "http://engage-interreg.eu/engage-app/upload.php";
+                } else if (publishType == engage.model.PublishType.RELEASE_ENGAGE_MAP) {
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "/assets/best_practices/";
+                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+                } else if (publishType == engage.model.PublishType.DEBUG_NETWORK) {
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
+                } else if (publishType == engage.model.PublishType.DEBUG_BROWSER) {
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+                } else if (publishType == engage.model.PublishType.DEBUG_SERVER) {
+                    Ressource.ASSET_PATH = "http://www.engage-interreg.eu/engage-map/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "http://www.engage-interreg.eu/engage-app/media";
+                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.CLOUD_DATA_REQUEST = "http://www.engage-interreg.eu/engage-app/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "http://engage-interreg.eu/engage-app/upload.php";
+                } else if (publishType == engage.model.PublishType.ADMIN) {
+                    Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    Ressource.MEDIA_PATH = "/assets/best_practices/";
+                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+                } else if (publishType == engage.model.PublishType.RELEASE_ENGAGE_SELFIE) {
+                    Ressource.ASSET_PATH = "/engage-map/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/engage-app/media";
+                    Ressource.MEDIA_PATH = "/assets/best_practices/";
+                    Ressource.CLOUD_DATA_REQUEST = "/engage-app/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/engage-app/upload.php";
+                }
+            };
+            Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
+            Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+            Ressource.MEDIA_PATH = "/assets/best_practices/";
+            Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
+            Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
+            Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+
+            Ressource.publishType = "";
+            return Ressource;
+        })();
+        model.Ressource = Ressource;
+    })(engage.model || (engage.model = {}));
+    var model = engage.model;
+})(engage || (engage = {}));
+
+$(window).ready(function () {
+    if ($("body").attr("data-publish-type"))
+        engage.model.Ressource.setup($("body").attr("data-publish-type"));
+});
 var engage;
 (function (engage) {
     (function (model) {
@@ -2929,9 +2976,11 @@ var engage;
                     'menu',
                     'people_data'];
                 this._loadFromWeb = true;
+                $.support.cors = true;
             }
             BaseDataManager.prototype.loadFromWeb = function () {
                 console.log("LOAD FROM WEB");
+                console.log(engage.model.Ressource.CLOUD_DATA_REQUEST);
                 this._loadFromWeb = true;
                 this.load(engage.model.Ressource.CLOUD_DATA_REQUEST);
             };
@@ -2960,6 +3009,7 @@ var engage;
 
             BaseDataManager.prototype.handleDataError = function (xhr, status, error) {
                 this.onError.dispatch(this._loadFromWeb, status, error);
+                console.log("ERROR LOAD DATA " + status + error);
             };
 
             BaseDataManager.prototype.handleDataSuccess = function (data) {
@@ -3159,13 +3209,6 @@ var engage;
                     item = this.data.people_data[i];
                     item.media = this.resolveById('media', item.media);
                     item.hasLocation = (item.latitude != 0 && item.longitude != 0);
-                    //                if (!item.hasLocation) {
-                    //                    //Brüssel coordinates: 50.852775,4.348984
-                    //                    var rangeLat: number = 0.4 * Math.random() - 0.2;
-                    //                    var rangeLng: number = 0.4 * Math.random() - 0.2;
-                    //                    item.latitude = 50.852775 + rangeLat;
-                    //                    item.longitude = 4.348984 + rangeLng;
-                    //                }
                 }
             };
             BaseDataManager.prototype.resolve_ui_label = function () {
@@ -3191,13 +3234,9 @@ var engage;
                 this.TERMTIME_BEGIN = 1990;
                 this.TERMTIME_END = 2018;
 
-                //TO-DO: for test only
-                //            if (engage.model.Ressource.publishType == engage.model.PublishType.DEBUG_AS_WEB)
-                //                this.loadFromWeb();
-                //            else
-                //                this.loadFromDisk();
                 this.loadFromWeb();
             }
+            //@override
             DataManager.prototype.finalize = function () {
                 //resolve labals
                 this._labels = {};
@@ -3764,6 +3803,36 @@ var engage;
 
                 this.init();
             }
+            MapMarker.setup = function () {
+                MapMarker._iconSettingDefault = {
+                    iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png",
+                    className: "marker_icon",
+                    iconSize: new L.Point(20, 28),
+                    iconAnchor: new L.Point(9, 23)
+                };
+
+                MapMarker._iconSettingOpen = {
+                    iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon-open.png",
+                    className: "marker_icon",
+                    iconSize: new L.Point(20, 28),
+                    iconAnchor: new L.Point(9, 23)
+                };
+
+                MapMarker._iconSettingEngageDefault = {
+                    iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-engage.png",
+                    className: "marker_icon",
+                    iconSize: new L.Point(30, 45),
+                    iconAnchor: new L.Point(14, 36)
+                };
+
+                MapMarker._iconSettingEngageOpen = {
+                    iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-engage-open.png",
+                    className: "marker_icon",
+                    iconSize: new L.Point(30, 45),
+                    iconAnchor: new L.Point(14, 36)
+                };
+            };
+
             MapMarker.prototype.init = function () {
                 var _this = this;
                 this._iconDefault = new L.Icon(engage.map.MapMarker._iconSettingDefault);
@@ -3886,34 +3955,6 @@ var engage;
             MapMarker.prototype.getHovered = function () {
                 return this._hovered;
             };
-            MapMarker._iconSettingDefault = {
-                iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon.png",
-                className: "marker_icon",
-                iconSize: new L.Point(20, 28),
-                iconAnchor: new L.Point(9, 23)
-            };
-
-            MapMarker._iconSettingOpen = {
-                iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-icon-open.png",
-                className: "marker_icon",
-                iconSize: new L.Point(20, 28),
-                iconAnchor: new L.Point(9, 23)
-            };
-
-            MapMarker._iconSettingEngageDefault = {
-                iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-engage.png",
-                className: "marker_icon",
-                iconSize: new L.Point(30, 45),
-                iconAnchor: new L.Point(14, 36)
-            };
-
-            MapMarker._iconSettingEngageOpen = {
-                iconUrl: engage.model.Ressource.ASSET_PATH + "/code-marker-engage-open.png",
-                className: "marker_icon",
-                iconSize: new L.Point(30, 45),
-                iconAnchor: new L.Point(14, 36)
-            };
-
             MapMarker._iconURLsResolved = false;
             return MapMarker;
         })();
@@ -5094,280 +5135,6 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (admin) {
-        var FindBox = (function () {
-            function FindBox(backend, wrapper) {
-                var _this = this;
-                this.backend = backend;
-                this.wrapper = wrapper;
-                this.onChange = new e5.core.Signal();
-                this.data = null;
-                this._placeholder = "select best practice...";
-                this.create();
-                this._select.bind("change keyup", function () {
-                    return _this.handleChange();
-                });
-            }
-            FindBox.prototype.handleChange = function () {
-                if (this._select.val() != "0") {
-                    this._defaultOption.remove();
-                    this.data = $("option[value='" + this._select.val() + "']").data("vo");
-                    this.onChange.dispatch();
-                }
-            };
-
-            FindBox.prototype.create = function () {
-                var bps = this.backend.manager.data.best_practice;
-                var l = bps.length;
-
-                this._defaultOption = $("<option value='0'>" + this._placeholder + "</select>");
-
-                this._select = $("<select></select>");
-                this._select.append(this._defaultOption);
-                for (var i = 0; i < l; ++i) {
-                    var bp = bps[i];
-                    var opt = $("<option value=" + bp.id + ">" + bp.id + " | " + bp.title + "</option>");
-                    opt.data("vo", bp);
-                    this._select.append(opt);
-                }
-                this.wrapper.append(this._select);
-            };
-            return FindBox;
-        })();
-        admin.FindBox = FindBox;
-    })(engage.admin || (engage.admin = {}));
-    var admin = engage.admin;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (admin) {
-        var PanelBestPractices = (function () {
-            function PanelBestPractices(backend) {
-                this.backend = backend;
-                //FOR TEST ONLY
-                this._fields = [
-                    "id",
-                    "title",
-                    "summary",
-                    "latitude",
-                    "longitude",
-                    "budget",
-                    "country",
-                    "location",
-                    "termtime_start",
-                    "termtime_end"
-                ];
-                this.wrapper = $("#panel");
-                this.wrapper.addClass("panel_best_practice");
-                this.create();
-            }
-            PanelBestPractices.prototype.handleChangeFindBox = function () {
-            };
-
-            PanelBestPractices.prototype.create = function () {
-                var l = this._fields.length;
-                for (var i = 0; i < l; ++i)
-                    this.addInput(this._fields[i], "");
-
-                var map = $("<div class='map'></div>");
-                this.wrapper.append(map);
-                this._map = new engage.map.MiniMap(map);
-                this._map.onChange.add(this.handleChangeMap, this);
-            };
-
-            PanelBestPractices.prototype.handleChangeMap = function () {
-                var pos = this._map.position;
-                $("#latitude").val(pos.lat);
-                $("#longitude").val(pos.lng);
-            };
-
-            PanelBestPractices.prototype.addInput = function (id, type) {
-                var lab = $("<div>" + id + "</div>");
-                this.wrapper.append(lab);
-                var inp = $("<textarea id='" + id + "' class='field'></textarea>");
-                this.wrapper.append(inp);
-            };
-
-            PanelBestPractices.prototype.open = function (bp) {
-                var l = this._fields.length;
-                for (var i = 0; i < l; ++i) {
-                    var fld = this._fields[i];
-                    var val = bp[fld];
-                    $("#" + fld).val(val);
-                }
-                this._map.setPosition(bp.latitude, bp.longitude);
-            };
-            return PanelBestPractices;
-        })();
-        admin.PanelBestPractices = PanelBestPractices;
-    })(engage.admin || (engage.admin = {}));
-    var admin = engage.admin;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (admin) {
-        var Backend = (function () {
-            function Backend() {
-                this.panel = null;
-                this.manager = new engage.model.DataManager();
-                this.manager.onComplete.add(this.handleComplete, this);
-            }
-            Backend.prototype.handleComplete = function () {
-                $("body").removeClass("progress");
-                this.panel = new engage.admin.PanelBestPractices(this);
-            };
-            return Backend;
-        })();
-        admin.Backend = Backend;
-    })(engage.admin || (engage.admin = {}));
-    var admin = engage.admin;
-})(engage || (engage = {}));
-var engage;
-(function (engage) {
-    (function (admin) {
-        var FilterPanel = (function () {
-            function FilterPanel() {
-                var _this = this;
-                this._query = null;
-                this._dataURL = "gateway.php";
-                this._wrapper = $("#admin-panel");
-                this._data = new engage.model.DataManager();
-                this._data.onComplete.add(this.handleComplete, this);
-
-                $(".panel_bar_item.save").click(function () {
-                    return _this.save();
-                });
-            }
-            FilterPanel.prototype.save = function () {
-                if (!this._query) {
-                    alert("NOTHING TO SAVE");
-                    return;
-                }
-
-                $("body").addClass("progress");
-                $.post(this._dataURL, { data: this._query }, function (response) {
-                    //console.log("DATA SAVED READY");
-                    //console.log(response);
-                    window.location.reload();
-                });
-            };
-
-            FilterPanel.prototype.handleComplete = function () {
-                this.create();
-            };
-
-            FilterPanel.prototype.create = function () {
-                var res = "<div>";
-                var bps = this._data.data.best_practice;
-                var l = bps.length;
-                for (var i = 0; i < l; ++i) {
-                    var bp = bps[i];
-
-                    res += "<div class='bp-item'>";
-                    res += "<div class='bp-title'>[" + bp.id + "] " + bp.title + "</div>";
-                    res += this.createCheckboxes(bp);
-                    res += "</div>";
-                }
-
-                res += "</div>";
-
-                this._wrapper.append(res);
-
-                var th = this;
-                $(".checkbox").click(function () {
-                    var ch = $(this);
-                    ch.toggleClass("checked");
-                    th.refreshQuery();
-                });
-            };
-
-            FilterPanel.prototype.refreshQuery = function () {
-                var added = [];
-                var removed = [];
-
-                $(".checkbox.checked[data-checked='0']").each(function () {
-                    var ch = $(this);
-                    added.push({
-                        bp: ch.attr("data-bp-id"),
-                        filterId: ch.attr("data-filter-id"),
-                        filterCategory: ch.attr("data-filter-category")
-                    });
-                });
-
-                $(".checkbox[data-checked='1']").each(function () {
-                    var ch = $(this);
-                    if (ch.hasClass("checked"))
-                        return;
-                    removed.push({
-                        bp: ch.attr("data-bp-id"),
-                        filterId: ch.attr("data-filter-id"),
-                        filterCategory: ch.attr("data-filter-category")
-                    });
-                });
-
-                if (added.length == 0 && removed.length == 0) {
-                    //nothing to save
-                    this._query = null;
-                } else
-                    this._query = JSON.stringify({ added: added, removed: removed });
-            };
-
-            FilterPanel.prototype.createCheckboxes = function (bp) {
-                var boxes = "";
-
-                //add main topics
-                boxes += "<div class='bp-category'>";
-                var allTops = this._data.data.topic;
-                var l = allTops.length;
-                for (var i = 0; i < l; ++i) {
-                    var topic = allTops[i];
-                    var checked = bp.topics.indexOf(topic) >= 0;
-                    boxes += this.createCheckbox(topic.id, "topic", bp, checked, topic.title);
-                }
-                boxes += "</div>";
-
-                //add technologies
-                boxes += "<div class='bp-category'>";
-                var allTechs = this._data.data.technology;
-                var l = allTechs.length;
-                for (var i = 0; i < l; ++i) {
-                    var tech = allTechs[i];
-                    var checked = bp.technologies.indexOf(tech) >= 0;
-                    boxes += this.createCheckbox(tech.id, "technology", bp, checked, tech.title);
-                }
-                boxes += "</div>";
-
-                //add influences
-                boxes += "<div class='bp-category'>";
-                var allInflus = this._data.data.influence;
-                var l = allInflus.length;
-                for (var i = 0; i < l; ++i) {
-                    var influ = allInflus[i];
-                    var checked = bp.influences.indexOf(influ) >= 0;
-                    boxes += this.createCheckbox(influ.id, "influence", bp, checked, influ.title);
-                }
-                boxes += "</div>";
-
-                return boxes;
-            };
-
-            FilterPanel.prototype.createCheckbox = function (filterId, filterTable, bp, checked, title) {
-                var box = "<div class='checkbox " + (checked ? "checked" : "") + "' data-filter-category='" + filterTable + "' data-filter-id='" + filterId + "' data-bp-id='" + bp.id + "' data-checked='" + (checked ? "1" : "0") + "'>" + title + "</div>";
-                return box;
-            };
-            return FilterPanel;
-        })();
-        admin.FilterPanel = FilterPanel;
-    })(engage.admin || (engage.admin = {}));
-    var admin = engage.admin;
-})(engage || (engage = {}));
-
-$(window).ready(function () {
-    if ($("#admin-panel").length > 0)
-        new engage.admin.FilterPanel();
-});
-var engage;
-(function (engage) {
     var Application = (function () {
         function Application(wrapper) {
             this.wrapper = wrapper;
@@ -5379,6 +5146,12 @@ var engage;
         }
         Application.prototype.handleComplete = function () {
             this.wrapper.removeClass("loading");
+
+            //sets the static icon properties
+            //its better to call it after JQuery
+            //is ready and the leafet L.Point class
+            //is available
+            engage.map.MapMarker.setup();
 
             //create the container/wrapper in the right order
             //indepentently from component creation order
@@ -5418,27 +5191,29 @@ var engage;
                 this.app = app;
                 this.element = $("<div id='people_content'></div>");
 
+                var cont = $("<div id='people_content_container'></div>");
+
                 //close button
                 this.closeButton = $("<div class='close_project_preview'></div>");
                 this.closeButton.css({ display: "block", height: "40px" });
                 this.closeButton.bind("click", function () {
                     return _this.close();
                 });
-                this.element.append(this.closeButton);
+                cont.append(this.closeButton);
 
                 //image
                 this.imageElement = $("<img class='image' />");
-                this.element.append(this.imageElement);
+                cont.append(this.imageElement);
 
                 //name
-                this.element.append("<p class='label_name'>Name</p>");
                 this.nameElement = $("<p class='name'></p>");
-                this.element.append(this.nameElement);
+                cont.append(this.nameElement);
 
                 //comment
-                this.element.append("<p class='label_comment'>Comment</p>");
                 this.commentElement = $("<p class='comment'></p>");
-                this.element.append(this.commentElement);
+                cont.append(this.commentElement);
+
+                this.element.append(cont);
             }
             PeopleContent.prototype.close = function () {
                 this.element.css("display", "none");
@@ -5557,6 +5332,7 @@ var engage;
             function PeopleMarker(map, data) {
                 this.map = map;
                 this.data = data;
+                data.marker = this;
                 this.init();
             }
             PeopleMarker.prototype.init = function () {
@@ -5586,6 +5362,11 @@ var engage;
             PeopleMarker.prototype.openPopup = function () {
                 this.marker.openPopup();
             };
+
+            PeopleMarker.prototype.center = function () {
+                var ll = this.marker.getLatLng();
+                this.map.map.panTo(ll);
+            };
             return PeopleMarker;
         })();
         people.PeopleMarker = PeopleMarker;
@@ -5614,17 +5395,17 @@ var engage;
                 var tileOpt = {};
                 tileOpt.attribution = ' Tiles: &copy; Esri arcgisonline.com';
                 tileOpt.minZoom = 4;
-                tileOpt.maxZoom = 10;
+                tileOpt.maxZoom = 14;
 
                 var mapOpt = {};
                 mapOpt.worldCopyJump = true;
                 mapOpt.center = initialPosition;
                 mapOpt.zoom = 4;
+                mapOpt.dragging = true;
+                mapOpt.touchZoom = true;
+                mapOpt.scrollWheelZoom = true;
 
                 this.map = new L.Map(this.element[0], mapOpt);
-                this.map.touchZoom.enable();
-                this.map.dragging.enabled();
-                this.map.scrollWheelZoom.enable();
                 this.map.zoomControl.removeFrom(this.map);
 
                 var _baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
@@ -5644,10 +5425,13 @@ var engage;
                     this.addMarker(pd[i]);
                 }
 
-                this.element.bind("click mousedown", function () {
+                //come-on lets do "leaflet-jobs"
+                //leaflet becomes the ugliest library so far (they only fix, but never restructure)
+                //            this.element.on("mouseup", ".marker_icon", () => alert("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"));
+                this.element.bind("click mousedown touchstart", function () {
                     return _this.onAction();
                 });
-                this.map.on("click mousedown dragstart", function () {
+                this.map.on("click mousedown dragstart move", function () {
                     return _this.onAction();
                 });
                 this.onAction();
@@ -5671,7 +5455,8 @@ var engage;
                 clearTimeout(this._actionTimeout);
                 this.enableRandom(false);
 
-                //wait 10 seconds for no-action
+                //            alert("ACTION");
+                //wait 8 seconds for no-action
                 //than start the random open process
                 this._actionTimeout = setTimeout(function () {
                     return _this.enableRandom(true);
@@ -5861,18 +5646,54 @@ var engage;
 
                 this.form = new engage.people.PeopleForm(this.app);
 
+                this.createList();
+
                 this.camera.onUploadSuccess.add(this.handleUploadSuccess, this);
                 this.camera.onUploadError.add(this.handleUploadError, this);
                 this.camera.onCaptureSuccess.add(this.handleCaptureSuccess, this);
                 this.element.on("click", ".popup_icon", function (evt) {
                     return _this.handleClickPopups(evt);
                 });
+                this.element.on("click", ".people_list_item", function (evt) {
+                    return _this.handleClickListItem(evt);
+                });
+                this.element.on("click", ".list_expander", function (evt) {
+                    return _this.handleClickExpander(evt);
+                });
+            };
+
+            PeoplePage.prototype.createList = function () {
+                var pd = this.app.manager.data.people_data;
+                var l = pd.length;
+                var list = "<div id='people_list_container' class='list_container'>";
+                list += "<div class='shadow'></div>";
+                list += "<div class='list_expander'></div>";
+                list += "<div id='people_list'>";
+                for (var i = 0; i < l; ++i) {
+                    var p = pd[i];
+                    list += "<div class='people_list_item' data-id='" + p.id + "' style='background-image:url(" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + p.media.fileName + ")'></div>";
+                }
+                list += "</div>"; //people_list
+                list += "</div>"; //people_list
+                this.element.append(list);
             };
 
             PeoplePage.prototype.handleClickPopups = function (evt) {
                 var peopleDataId = parseInt($(evt.target).attr("data-id"));
                 var data = this.app.manager.data.people_data.id(peopleDataId);
                 this.content.update(data);
+            };
+
+            PeoplePage.prototype.handleClickListItem = function (evt) {
+                var peopleDataId = parseInt($(evt.target).attr("data-id"));
+                var data = this.app.manager.data.people_data.id(peopleDataId);
+                data.marker.openPopup();
+                data.marker.center();
+            };
+
+            PeoplePage.prototype.handleClickExpander = function (evt) {
+                var lc = $("#people_list_container");
+                lc.toggleClass("collapsed");
             };
 
             PeoplePage.prototype.handleCaptureSuccess = function () {
@@ -6154,6 +5975,8 @@ var engage;
                     latitude: latitude,
                     longitude: longitude,
                     media: null,
+                    country: "",
+                    marker: null,
                     hasLocation: latitude != 0 && longitude != 0
                 };
 
@@ -6224,8 +6047,6 @@ var engage;
         __extends(MobileApplication, _super);
         function MobileApplication(wrapper) {
             $.support.cors = true;
-
-            engage.model.Ressource.setup(engage.model.PublishType.RELEASE_APP);
 
             _super.call(this, wrapper);
 
