@@ -26,7 +26,7 @@
         <preference name="exit-on-suspend" value="false" />
 
         <!-- <gap:splash src="splash.png" /> -->
-        <gap:splash src="splash/ios/Default_iphone5.png" gap:platform="ios" width="640" height="1136" /
+        <gap:splash src="splash/ios/Default_iphone5.png" gap:platform="ios" width="640" height="1136" />
         <!-- <preference name="auto-hide-splash-screen" value="false" /> -->
         <preference name="splash-screen-duration" value="2000" />
 
