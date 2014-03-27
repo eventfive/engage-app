@@ -25,7 +25,8 @@
         <!-- <preference name="android-minSdkVersion" value="12" /> -->
         <preference name="exit-on-suspend" value="false" />
 
-        <gap:splash src="splash.png" />
+        <!-- <gap:splash src="splash.png" /> -->
+        <gap:splash src="splash/ios/Default_iphone5.png" gap:platform="ios" width="640" height="1136" /
         <!-- <preference name="auto-hide-splash-screen" value="false" /> -->
         <preference name="splash-screen-duration" value="2000" />
 
@@ -41,6 +42,7 @@
         <gap:plugin name="org.apache.cordova.file-transfer" />
         <gap:plugin name="org.apache.cordova.media-capture" />
         <gap:plugin name="org.apache.cordova.media" />
+        
         
         <icon src="icon-36-ldpi.png" gap:platform="android" gap:density="ldpi" />
 	    <icon src="icon-48-mdpi.png" gap:platform="android" gap:density="mdpi" />
