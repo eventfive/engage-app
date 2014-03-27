@@ -25,7 +25,7 @@
         <!-- <preference name="android-minSdkVersion" value="12" /> -->
         <preference name="exit-on-suspend" value="false" />
 
-        <gap:splash src="Default-568h@2x.png" />
+        <gap:splash src="splash.png" />
         <!-- <preference name="auto-hide-splash-screen" value="false" /> -->
         <preference name="splash-screen-duration" value="2000" />
 
