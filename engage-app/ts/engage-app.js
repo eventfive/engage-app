@@ -5511,7 +5511,7 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
-                    if (!menu[i].enabled)
+                    if (!menu[i].enabled && menu[i].enabled !== undefined)
                         continue;
                     var imgURL = engage.model.Ressource.ASSET_PATH + "/" + menu[i].icon_url;
                     if (menu[i].icon_url.indexOf("http") >= 0)
