@@ -901,6 +901,10 @@ html {
 	margin: 0;
 }
 
+.hidden{
+	display: none;	
+}
+
 body {
 	padding: 0;
 	margin: 0;
@@ -2746,4 +2750,13 @@ iframe{
 	position: relative;
 	margin: 0 auto;
 	display: block;
+}
+#preloader {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-color: #095168;
+	background-image: url(../assets/preloader-progress.gif);
+	background-position: center;
+	background-repeat: no-repeat;
 }

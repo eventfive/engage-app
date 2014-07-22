@@ -33,6 +33,32 @@ if (!Array.prototype.indexOf) {
     };
 }
 
+Array.prototype.equals = function (b) {
+    if (!this && !b)
+        return true;
+    if (!this && b)
+        return false;
+    if (this && !b)
+        return false;
+
+    if (this.length != b.length)
+        return false;
+
+    var l = this.length;
+    for (var i = 0; i < l; ++i) {
+        if (b.indexOf(this[i]) < 0)
+            return false;
+    }
+    return true;
+};
+
+Array.prototype.remove = function (value) {
+    var idx = this.indexOf(value);
+    if (idx < 0)
+        return;
+    this.splice(idx, 1);
+};
+
 //Fix for IE when no console if available (its created when the debug-console opens)
 var cons = "console";
 if (!window.console)
@@ -54,6 +80,10 @@ var e5;
                 //is ios operation system
                 this.isIOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false);
 
+                this.isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+                this.isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+                this.isWebkit = (window["webkitURL"] != null);
+
                 //canvas support
                 var elem = document.createElement('canvas');
                 Caps.canvasSupported = Boolean(elem.getContext && elem.getContext('2d'));
@@ -67,6 +97,8 @@ var e5;
                 //pixel ratio
                 Caps.pixelRatio = window["devicePixelRatio"] ? window["devicePixelRatio"] : 1;
 
+                Caps.formDataSupported = !(window["FormData"] === undefined);
+
                 //is mobile envirionment
                 //SOURCE MODIFIED: http://stackoverflow.com/questions/11381673/javascript-solution-to-detect-mobile-browser
                 var a = navigator.appVersion;
@@ -76,10 +108,14 @@ var e5;
             Caps.touchSupported = false;
             Caps.canvasSupported = false;
             Caps.workerSupported = false;
+            Caps.formDataSupported = false;
             Caps.isMSIE = false;
             Caps.isIOS = false;
             Caps.isMobile = false;
             Caps.msieVersion = 0;
+            Caps.isWebkit = false;
+            Caps.isChrome = false;
+            Caps.isSafari = false;
             return Caps;
         })();
         core.Caps = Caps;
@@ -179,6 +215,10 @@ var e5;
                 return value + (mod - value % mod);
             };
 
+            Calc.valueFromCss = function (value, referenceSize) {
+                return value.indexOf("%") > 0 ? (parseFloat(value.replace("%", "")) / 100) * referenceSize : parseFloat(value.replace("px", ""));
+            };
+
             Calc.averageAngle = function (angles) {
                 var avgX = 0;
                 var avgY = 0;
@@ -199,6 +239,10 @@ var e5;
             };
             Calc.TO_DEG = 180 / Math.PI;
             Calc.TO_RAD = Math.PI / 180;
+
+            Calc.YEAR_MILLISECONDS = 31536000000;
+
+            Calc.DAY_MILLISECONDS = 86400000;
             return Calc;
         })();
         math.Calc = Calc;
@@ -217,6 +261,12 @@ var e5;
             }
             Point.prototype.length = function () {
                 return Math.sqrt(this.x * this.x + this.y * this.y);
+            };
+
+            Point.distance = function (a, b) {
+                var dx = a.x - b.x;
+                var dy = a.y - b.y;
+                return Math.sqrt(dx * dx + dy * dy);
             };
             Point.origin = new Point(0, 0);
             return Point;
@@ -253,7 +303,8 @@ var e5;
                 //            pointX /= 600;
                 //            pointY /= 600;
                 //
-                //            pointX *= 6378137;
+                pointX *= 6378137;
+
                 //            pointY *= 6378137;
                 pointX = pointX / textureWidth;
                 pointY = pointY / textureHeight;
@@ -269,6 +320,27 @@ var e5;
                 var latRadians = (pointY) / -textureHeight;
                 var lat = ((2 * Math.atan(Math.exp(latRadians)) * Math.PI / 180) - Math.PI / 2);
                 return new e5.math.Point(lat, lng);
+            };
+
+            //SOURCE (modified): http://stackoverflow.com/questions/8935117/how-can-i-convert-curveto-to-a-list-of-points
+            Geom.interpolateQuadraticCurve = function (u, originX, originY, cpx, cpy, x, y) {
+                var B1 = (1 - u) * (1 - u);
+                var B2 = 2 * u * (1 - u);
+                var B3 = u * u;
+                var x = originX * B1 + cpx * B2 + x * B3;
+                var y = originY * B1 + cpy * B2 + y * B3;
+                return { x: x, y: y };
+            };
+
+            Geom.sizePolygon = function (poly) {
+                var area = 0.0;
+                var l = poly.length - 1;
+                for (var k = 0; k < l; k++) {
+                    var xDiff = poly[k + 1].x - poly[k].x;
+                    var yDiff = poly[k + 1].y - poly[k].y;
+                    area = area + poly[k].x * yDiff - poly[k].y * xDiff;
+                }
+                return 0.5 * area;
             };
             return Geom;
         })();
@@ -513,7 +585,69 @@ var e5;
 })(e5 || (e5 = {}));
 var e5;
 (function (e5) {
-    (function (text) {
+    (function (model) {
+        var FormManager = (function () {
+            function FormManager(form, validator) {
+                var _this = this;
+                this.onSubmit = new e5.core.Signal();
+                this.onSuccess = new e5.core.Signal();
+                this._valid = false;
+                this._form = form;
+                this._validator = validator;
+
+                //bind listeners
+                this._form.submit(function (e) {
+                    return _this.handleSubmit(e);
+                });
+                this._form.on("change keyup select", function () {
+                    return _this.validate();
+                });
+            }
+            FormManager.prototype.submit = function () {
+                var _this = this;
+                if (!this._valid)
+                    return;
+
+                var formData = e5.core.Caps.formDataSupported ? new window.FormData(this._form[0]) : this._form.serialize();
+
+                var url = this._form.attr("action");
+                var settings = {};
+                settings.url = url;
+                settings.type = "POST";
+                settings.data = formData;
+                settings.contentType = false;
+                settings.processData = false;
+                settings.success = function (data) {
+                    return _this.handleAjaxSuccess(data);
+                };
+
+                this.onSubmit.dispatch(formData, settings);
+
+                $.ajax(settings);
+            };
+
+            FormManager.prototype.validate = function () {
+                this._valid = this._validator();
+            };
+
+            FormManager.prototype.handleSubmit = function (e) {
+                e.preventDefault();
+                this.submit();
+                return false;
+            };
+
+            FormManager.prototype.handleAjaxSuccess = function (data) {
+                this.onSuccess.dispatch(data);
+            };
+            return FormManager;
+        })();
+        model.FormManager = FormManager;
+    })(e5.model || (e5.model = {}));
+    var model = e5.model;
+})(e5 || (e5 = {}));
+var e5;
+(function (e5) {
+    (function (_text) {
         var Text = (function () {
             function Text() {
             }
@@ -563,6 +697,33 @@ var e5;
                     text = fillChar.charAt(0) + text;
                 return text;
             };
+
+            Text.clamp = function (text, maxLength, ending, minLength, separators) {
+                if (typeof ending === "undefined") { ending = "..."; }
+                if (typeof minLength === "undefined") { minLength = 3; }
+                if (typeof separators === "undefined") { separators = " -+,._;/\\"; }
+                if (text.length < maxLength)
+                    return text;
+
+                var t = text.substr(0, maxLength);
+                var l = t.length;
+                var m = separators.length;
+                var breaked = false;
+                for (var j = l - 3; j >= 0; j--) {
+                    var char = t.charAt(j);
+                    for (var i = 0; i < l; ++i) {
+                        if (separators.charAt(i) == char) {
+                            breaked = true;
+                            break;
+                        }
+                    }
+                    if (breaked)
+                        break;
+                }
+                if (!breaked)
+                    return t.substr(0, maxLength - 3) + ending;
+                return text.substr(0, ++j) + ending;
+            };
             Text.MONTH_EN = [
                 "January",
                 "February",
@@ -578,30 +739,7 @@ var e5;
                 "December"];
             return Text;
         })();
-        text.Text = Text;
-    })(e5.text || (e5.text = {}));
-    var text = e5.text;
-})(e5 || (e5 = {}));
-var e5;
-(function (e5) {
-    (function (text) {
-        var Symbols = (function () {
-            function Symbols() {
-            }
-            Symbols.ARROW_UP = "&#8593;";
-            Symbols.ARROW_RIGHT = "&#8594;";
-            Symbols.ARROW_DOWN = "&#8595;";
-            Symbols.ARROW_LEFT = "&#8592;";
-            Symbols.CHECK_MARK = "&#10003;";
-            Symbols.BALLOT_BOX = "&#9744;";
-            Symbols.BALLOT_BOX_WITH_CHECK = "&#9745;";
-            Symbols.BALLOT_BOX_WITH_X = "&#9746;";
-            Symbols.PLUS_SIGN = "&#43;";
-            Symbols.MINUS_SIGN = "&#8722;";
-            Symbols.PLUS_MINUS_SIGN = "&#177;";
-            return Symbols;
-        })();
-        text.Symbols = Symbols;
+        _text.Text = Text;
     })(e5.text || (e5.text = {}));
     var text = e5.text;
 })(e5 || (e5 = {}));
@@ -1520,7 +1658,7 @@ var e5;
                 _super.prototype.dispose.call(this);
             };
             return Scroller;
-        })(e5.input.Interactor);
+        })(input.Interactor);
         input.Scroller = Scroller;
     })(e5.input || (e5.input = {}));
     var input = e5.input;
@@ -1683,225 +1821,7 @@ var e5;
 })(e5 || (e5 = {}));
 var e5;
 (function (e5) {
-    (function (input) {
-        var PagerSetting = (function (_super) {
-            __extends(PagerSetting, _super);
-            function PagerSetting() {
-                _super.apply(this, arguments);
-                this.pagingVertical = true;
-                this.pagingHorizontal = false;
-            }
-            return PagerSetting;
-        })(e5.input.ScrollerSetting);
-        input.PagerSetting = PagerSetting;
-
-        var Pager = (function (_super) {
-            __extends(Pager, _super);
-            function Pager(wrapper, holder, setting) {
-                _super.call(this, wrapper, holder, null);
-                /**
-                * callback: (newPageIndex:number, oldPageIndex:number):void
-                */
-                this.onPageChange = new e5.core.Signal();
-                /**
-                * callback: (newPageIndex:number, oldPageIndex:number):void
-                */
-                this.onPageReached = new e5.core.Signal();
-                this._pageHorizontal = 0;
-                this._pageVertical = 0;
-                this._pagingHorizontal = false;
-                this._pagingVertical = false;
-                this._lastReachedPageX = 0;
-                this._lastReachedPageY = 0;
-                this._tween = null;
-
-                this._pageWidth = wrapper.width();
-                this._pageHeight = wrapper.height();
-
-                this.onActionBegin.add(this.startDrag, this);
-                this.onActionEnd.add(this.endDrag, this);
-
-                this.setSetting(setting);
-            }
-            Pager.prototype.setSetting = function (setting) {
-                _super.prototype.setSetting.call(this, setting);
-                this.setPagingHorizontal(setting.pagingHorizontal);
-                this.setPagingVertical(setting.pagingVertical);
-            };
-
-            Pager.prototype.resize = function () {
-                _super.prototype.resize.call(this);
-
-                this._pageWidth = this.getTarget().width();
-                this._pageHeight = this.getTarget().height();
-                if (this._pagingVertical)
-                    this.setScrollTop(this._pageVertical * this._pageHeight);
-                if (this._pagingHorizontal)
-                    this.setScrollLeft(this._pageHorizontal * this._pageWidth);
-            };
-
-            Pager.prototype.getPagingVertical = function () {
-                return this._pagingVertical;
-            };
-
-            Pager.prototype.setPagingVertical = function (value) {
-                if (this._pagingVertical == value)
-                    return;
-                this._pagingVertical = value;
-                if (this._pagingVertical)
-                    this.onScrollTop.add(this.checkPageVertical, this);
-                else
-                    this.onScrollTop.remove(this.checkPageVertical);
-            };
-
-            Pager.prototype.getPagingHorizontal = function () {
-                return this._pagingHorizontal;
-            };
-
-            Pager.prototype.setPagingHorizontal = function (value) {
-                if (this._pagingHorizontal == value)
-                    return;
-                this._pagingHorizontal = value;
-                if (this._pagingHorizontal)
-                    this.onScrollLeft.add(this.checkPageHorizontal, this);
-                else
-                    this.onScrollLeft.remove(this.checkPageHorizontal);
-            };
-
-            Pager.prototype.getPageHeight = function () {
-                return this._pageHeight;
-            };
-
-            Pager.prototype.getPageWidth = function () {
-                return this._pageWidth;
-            };
-
-            Pager.prototype.getPageHorizontal = function () {
-                return this._pageHorizontal;
-            };
-
-            Pager.prototype.setPageHorizontal = function (value, time) {
-                if (typeof time === "undefined") { time = 0; }
-                TweenMax.to(this, time, { setScrollLeft: Math.round(value) * this._pageWidth });
-            };
-
-            Pager.prototype.getPageVertical = function () {
-                return this._pageVertical;
-            };
-
-            Pager.prototype.setPageVertical = function (value, time) {
-                if (typeof time === "undefined") { time = 0; }
-                TweenMax.to(this, time, { setScrollTop: Math.round(value) * this._pageHeight });
-            };
-
-            Pager.prototype.startDrag = function () {
-                TweenMax.killTweensOf(this);
-            };
-
-            Pager.prototype.endDrag = function () {
-                if (!this.getEnabled())
-                    return;
-
-                if (this._pagingVertical) {
-                    var dy = this.getOriginY() - this.getPageY();
-                    if (Math.abs(dy) < 15)
-                        TweenMax.to(this, 0.7, {
-                            setScrollTop: this.getPageVertical() * this.getPageHeight()
-                        });
-                    else
-                        TweenMax.to(this, 0.7, {
-                            setScrollTop: this.getDeltaY() > 0 ? this.getPreviousPageTop() : this.getNextPageTop()
-                        });
-                }
-                if (this._pagingHorizontal) {
-                    TweenMax.to(this, 0.5, {
-                        setScrollLeft: this.getDeltaX() > 0 ? this.getPreviousPageLeft() : this.getNextPageLeft()
-                    });
-                }
-            };
-
-            Pager.prototype.handleMouseWheelEnd = function () {
-                _super.prototype.handleMouseWheelEnd.call(this);
-
-                if (this._pagingVertical) {
-                    TweenMax.to(this, 0.5, {
-                        setScrollTop: this.getLastMouseWheelDelta() < 0 ? this.getPreviousPageTop() : this.getNextPageTop()
-                    });
-                }
-
-                if (this._pagingHorizontal) {
-                    TweenMax.to(this, 0.5, {
-                        setScrollLeft: this.getLastMouseWheelDelta() < 0 ? this.getPreviousPageLeft() : this.getNextPageLeft()
-                    });
-                }
-            };
-
-            Pager.prototype.getPreviousPageTop = function () {
-                return this.getScrollTop() - (this.getScrollTop() % this._pageHeight);
-            };
-
-            Pager.prototype.getNextPageTop = function () {
-                return this.getScrollTop() + (this._pageHeight - (this.getScrollTop() % this._pageHeight));
-            };
-
-            Pager.prototype.getPreviousPageLeft = function () {
-                return this.getScrollLeft() - (this.getScrollLeft() % this._pageWidth);
-            };
-
-            Pager.prototype.getNextPageLeft = function () {
-                return this.getScrollLeft() + (this._pageWidth - (this.getScrollLeft() % this._pageWidth));
-            };
-
-            Pager.prototype.checkPageVertical = function () {
-                var idx = Math.floor((this.getScrollTop() + this._pageHeight * 0.5) / this._pageHeight);
-                if (idx != this._pageVertical) {
-                    var oldPage = this._pageVertical;
-                    this._pageVertical = idx;
-                    this.onPageChange.dispatch(this._pageVertical, oldPage);
-                }
-
-                if (idx != this._lastReachedPageY) {
-                    if (this.getScrollTop() % this._pageHeight <= 0.1) {
-                        var oldReachedPageY = this._lastReachedPageY;
-                        this._lastReachedPageY = idx;
-                        this.onPageReached.dispatch(this._lastReachedPageY, oldReachedPageY);
-                    }
-                }
-            };
-
-            Pager.prototype.checkPageHorizontal = function () {
-                var idx = Math.floor((this.getScrollLeft() + this._pageWidth * 0.5) / this._pageWidth);
-                if (idx != this._pageHorizontal) {
-                    var oldPage = this._pageHorizontal;
-                    this._pageHorizontal = idx;
-                    this.onPageChange.dispatch(this._pageHorizontal, oldPage);
-                }
-
-                if (idx != this._lastReachedPageX) {
-                    if (this.getScrollLeft() % this._pageWidth <= 0.1) {
-                        var oldReachedPageX = this._lastReachedPageX;
-                        this._lastReachedPageX = idx;
-                        this.onPageReached.dispatch(this._lastReachedPageX, oldReachedPageX);
-                    }
-                }
-            };
-
-            Pager.prototype.dispose = function () {
-                this.onPageChange.dispose();
-                this.onPageReached.dispose();
-                this.onPageChange = null;
-                this.onPageReached = null;
-                _super.prototype.dispose.call(this);
-            };
-            return Pager;
-        })(e5.input.Scroller);
-        input.Pager = Pager;
-    })(e5.input || (e5.input = {}));
-    var input = e5.input;
-})(e5 || (e5 = {}));
-var e5;
-(function (e5) {
-    (function (ui) {
+    (function (display) {
         var Slider = (function () {
             function Slider(wrapper, value, min, max) {
                 var _this = this;
@@ -2051,274 +1971,13 @@ var e5;
             };
             return Slider;
         })();
-        ui.Slider = Slider;
-    })(e5.ui || (e5.ui = {}));
-    var ui = e5.ui;
+        display.Slider = Slider;
+    })(e5.display || (e5.display = {}));
+    var display = e5.display;
 })(e5 || (e5 = {}));
 var e5;
 (function (e5) {
-    (function (ui) {
-        var ScrollIndicator = (function () {
-            function ScrollIndicator(scroller, container) {
-                if (typeof container === "undefined") { container = null; }
-                var _this = this;
-                this.create();
-
-                this._scroller = scroller;
-                this._scroller.onResized.add(function () {
-                    return _this.update();
-                });
-                this._scroller.onScrollTop.add(function () {
-                    return _this.update();
-                });
-
-                if (container)
-                    this.add(container);
-            }
-            ScrollIndicator.prototype.add = function (container) {
-                container.append(this._widget);
-                this.update();
-            };
-
-            ScrollIndicator.prototype.create = function () {
-                this._widget = $("<div class='scroll_indicator'></div>");
-                this._track = $("<div class='track'></div>");
-                this._widget.append(this._track);
-                this._thumb = $("<div class='thumb'></div>");
-                this._track.append(this._thumb);
-            };
-
-            ScrollIndicator.prototype.update = function () {
-                var th = this._track.height();
-
-                var ratioY = this._scroller.getTarget().height() / this._scroller.getContentHeight();
-                if (isNaN(ratioY))
-                    ratioY = 0;
-                ratioY = e5.math.Calc.clamp(ratioY, 0, 1);
-                var newHeight = th * ratioY;
-
-                var sr = this._scroller.getScrollTop() / this._scroller.getScrollTopMax();
-                if (isNaN(sr))
-                    sr = 0;
-                sr = e5.math.Calc.clamp(sr, 0, 1);
-                var newTop = (th - newHeight) * sr;
-
-                this._widget.toggleClass("hidden", ratioY == 1);
-                this._thumb[0].style.top = Math.round(newTop) + "px";
-                this._thumb[0].style.height = Math.round(newHeight) + "px";
-            };
-            return ScrollIndicator;
-        })();
-        ui.ScrollIndicator = ScrollIndicator;
-    })(e5.ui || (e5.ui = {}));
-    var ui = e5.ui;
-})(e5 || (e5 = {}));
-var e5;
-(function (e5) {
-    (function (ui) {
-        var PageIndicator = (function () {
-            function PageIndicator(holder, item, count, index, vertical) {
-                if (typeof index === "undefined") { index = 0; }
-                if (typeof vertical === "undefined") { vertical = true; }
-                this._vertical = true;
-                this._holder = holder;
-                this._item = item;
-                this._count = count;
-                this._index = index;
-                this._vertical = vertical;
-
-                this.resize();
-            }
-            PageIndicator.prototype.getHolder = function () {
-                return this._holder;
-            };
-
-            PageIndicator.prototype.getItem = function () {
-                return this._item;
-            };
-
-            PageIndicator.prototype.getCount = function () {
-                return this._count;
-            };
-
-            PageIndicator.prototype.getVertical = function () {
-                return this._vertical;
-            };
-
-            PageIndicator.prototype.setVertical = function (value) {
-                this._vertical = value;
-            };
-
-            PageIndicator.prototype.setCount = function (value, time) {
-                if (typeof time === "undefined") { time = 0; }
-                if (this._count == value)
-                    return;
-                this._count = value;
-
-                this.refresh(time);
-            };
-
-            PageIndicator.prototype.getIndex = function () {
-                return this._index;
-            };
-
-            PageIndicator.prototype.setIndex = function (value, time) {
-                if (typeof time === "undefined") { time = 0; }
-                if (this._index == value)
-                    return;
-                this._index = value;
-
-                this.refresh(time);
-            };
-
-            PageIndicator.prototype.resize = function () {
-                if (this._vertical) {
-                    var h = this._holder.height() / this._count;
-                    this._item.css("height", h + "px");
-                    this._item.css("transform", "translateY(" + this._index * h + "px)");
-                } else {
-                    var w = this._holder.width() / this._count;
-                    this._item.css("width", h + "px");
-                    this._item.css("transform", "translateX(" + this._index * w + "px)");
-                }
-            };
-
-            PageIndicator.prototype.refresh = function (time) {
-                if (this._vertical) {
-                    var h = this._holder.height() / this._count;
-                    var posY = this._index * h;
-                    TweenMax.to(this._item[0], time, { css: { transform: "translateY(" + posY + "px)" } });
-                } else {
-                    var w = this._holder.width() / this._count;
-                    var posX = this._index * w;
-                    TweenMax.to(this._item[0], time, { css: { transform: "translateX(" + posX + "px)" } });
-                }
-            };
-            return PageIndicator;
-        })();
-        ui.PageIndicator = PageIndicator;
-    })(e5.ui || (e5.ui = {}));
-    var ui = e5.ui;
-})(e5 || (e5 = {}));
-var e5;
-(function (e5) {
-    (function (ui) {
-        var StickyScroller = (function () {
-            function StickyScroller(list, containerClass, iconClass, globalLimitTop, globalLimitBottom, localLimitTop, localLimitBottom, syncMouseWheel) {
-                if (typeof syncMouseWheel === "undefined") { syncMouseWheel = false; }
-                var _this = this;
-                this.list = list;
-                this.containerClass = containerClass;
-                this.iconClass = iconClass;
-                this.globalLimitTop = globalLimitTop;
-                this.globalLimitBottom = globalLimitBottom;
-                this.localLimitTop = localLimitTop;
-                this.localLimitBottom = localLimitBottom;
-                this._scaleFix = 1;
-                this._scaleFix = e5.core.Caps.pixelRatio;
-
-                if (syncMouseWheel)
-                    list.bind("mousewheel DOMMouseScroll", function (evt) {
-                        return _this.handleMouseWheel(evt);
-                    });
-            }
-            StickyScroller.prototype.handleMouseWheel = function (evt) {
-                //prevent the default behaviour (scrolling)
-                var originalEvent = evt.originalEvent;
-                if (!originalEvent)
-                    originalEvent = window.event;
-                if (originalEvent.preventDefault)
-                    originalEvent.preventDefault();
-                originalEvent.returnValue = false;
-
-                //TODO: implement it usable
-                var target = evt.currentTarget;
-                if (this.list[0].scrollHeight == this.list.outerHeight()) {
-                    if (document.documentElement)
-                        target = document.documentElement;
-                    else
-                        target = document.body;
-                }
-
-                //emulate the scrolling (do it manually)
-                var delta = originalEvent.detail;
-                if (!delta)
-                    delta = originalEvent.wheelDelta / -40;
-                target.scrollTop += delta * 16;
-
-                //finally trigger a own  mousewheel and scroll event
-                $(target).trigger("mousewheel DOMMouseScroll", originalEvent);
-                $(target).trigger("scroll");
-            };
-
-            StickyScroller.prototype.getFirstVisibleElement = function (pageX, pageY) {
-                var element = document.elementFromPoint(pageX + 10, pageY + 10);
-                var firstWebsite = $(element).hasClass(this.containerClass) ? $(element) : $(element).parents("." + this.containerClass);
-                var websites = $("." + this.containerClass + ":visible");
-                var firstIndex = websites.index(firstWebsite);
-                if (!firstIndex)
-                    firstIndex = 0;
-                if (firstWebsite.length <= 0)
-                    return null;
-                return firstWebsite;
-            };
-
-            StickyScroller.prototype.update = function () {
-                var minHitTop = parseInt($("body").css("padding-top").replace(/[^-\d\.]/g, ''));
-                var maxHitTop = Math.min(this.list.outerHeight(), $(window).innerHeight());
-                var windowScrollTop = $(window).scrollTop();
-                var scrollTop = windowScrollTop - this.list.position().top;
-                var scrollBottom = scrollTop + maxHitTop + this.list.scrollTop();
-                var listOff = this.list.offset();
-                var hitTestPageX = listOff.left;
-                var hitTestPageY = Math.max(listOff.top - windowScrollTop, minHitTop);
-                var offsetTop = hitTestPageY + this.localLimitTop;
-
-                var fstElement = this.getFirstVisibleElement(hitTestPageX * this._scaleFix, hitTestPageY * this._scaleFix);
-                if (!fstElement) {
-                    //console.log("NO FIRST ELEMENT FOUND", this._scaleFix);
-                    return;
-                }
-
-                var websites = $("." + this.containerClass + ":visible");
-                var firstIndex = websites.index(fstElement);
-                websites = websites.slice(firstIndex);
-
-                var iconClass = this.iconClass;
-                var th = this;
-                websites.each(function () {
-                    var website = $(this);
-                    var wh = website.outerHeight();
-                    var topPos = website.position().top;
-                    if (topPos > scrollBottom)
-                        return false;
-
-                    if (wh < 200)
-                        return;
-
-                    var icon = $("." + iconClass, website);
-                    var localTopMin = th.localLimitTop;
-                    var localTopMax = wh - (icon.outerHeight() + th.localLimitBottom);
-                    var localTop = offsetTop - (website.offset().top - windowScrollTop);
-                    if (localTop < localTopMin)
-                        localTop = localTopMin;
-                    else if (localTop > localTopMax)
-                        localTop = localTopMax;
-
-                    icon.css("top", "" + Math.round(localTop) + "px");
-                    //icon.css("transform", "translateY(" + Math.round(localTop) + "px)");
-                    //icon.css("transform", "translate3d(0px, " + Math.round(localTop) + "px, 0px)");
-                });
-            };
-            return StickyScroller;
-        })();
-        ui.StickyScroller = StickyScroller;
-    })(e5.ui || (e5.ui = {}));
-    var ui = e5.ui;
-})(e5 || (e5 = {}));
-var e5;
-(function (e5) {
-    (function (ui) {
+    (function (display) {
         var Slideshow = (function () {
             function Slideshow(wrapper) {
                 var _this = this;
@@ -2499,7 +2158,7 @@ var e5;
 
                 this.wrapper.toggleClass("single_page", l == 1);
                 for (var i = 0; i < l; ++i)
-                    this.items.push(e5.ui.MediaFactory.create(resources[i]));
+                    this.items.push(e5.display.MediaFactory.create(resources[i]));
 
                 //this.items.push(e5.ui.MediaFactory.create({ path: "", type: "map" }));
                 //this.items.push(e5.ui.MediaFactory.create({ path: "http://videos-cdn.mozilla.net/brand/Mozilla_Firefox_Manifesto_v0.2_640.mp4", type: "video" }));
@@ -2610,13 +2269,13 @@ var e5;
             };
             return Slideshow;
         })();
-        ui.Slideshow = Slideshow;
+        display.Slideshow = Slideshow;
 
         var MediaFactory = (function () {
             function MediaFactory() {
             }
             MediaFactory.create = function (resource) {
-                var cls = e5.ui.MediaFactory._typeClasses[resource.type];
+                var cls = e5.display.MediaFactory._typeClasses[resource.type];
                 if (!cls) {
                     console.log("NO MEDIA CLASS FOUND FOR TYPE:", resource.type);
                     return;
@@ -2625,16 +2284,16 @@ var e5;
             };
 
             MediaFactory.addClass = function (type, cls) {
-                e5.ui.MediaFactory._typeClasses[type] = cls;
+                e5.display.MediaFactory._typeClasses[type] = cls;
             };
 
             MediaFactory.removeClass = function (type) {
-                delete e5.ui.MediaFactory._typeClasses[type];
+                delete e5.display.MediaFactory._typeClasses[type];
             };
             MediaFactory._typeClasses = {};
             return MediaFactory;
         })();
-        ui.MediaFactory = MediaFactory;
+        display.MediaFactory = MediaFactory;
 
         var MediaElement = (function () {
             function MediaElement(resource) {
@@ -2659,7 +2318,7 @@ var e5;
             };
             return MediaElement;
         })();
-        ui.MediaElement = MediaElement;
+        display.MediaElement = MediaElement;
 
         var ImageElement = (function (_super) {
             __extends(ImageElement, _super);
@@ -2687,9 +2346,9 @@ var e5;
                 this.onReady.dispatch();
             };
             return ImageElement;
-        })(e5.ui.MediaElement);
-        ui.ImageElement = ImageElement;
-        e5.ui.MediaFactory.addClass("image", e5.ui.ImageElement);
+        })(e5.display.MediaElement);
+        display.ImageElement = ImageElement;
+        e5.display.MediaFactory.addClass("image", e5.display.ImageElement);
 
         var VideoElement = (function (_super) {
             __extends(VideoElement, _super);
@@ -2731,15 +2390,15 @@ var e5;
                 this.onReady.dispatch();
             };
             return VideoElement;
-        })(e5.ui.MediaElement);
-        ui.VideoElement = VideoElement;
-        e5.ui.MediaFactory.addClass("video", e5.ui.VideoElement);
-    })(e5.ui || (e5.ui = {}));
-    var ui = e5.ui;
+        })(e5.display.MediaElement);
+        display.VideoElement = VideoElement;
+        e5.display.MediaFactory.addClass("video", e5.display.VideoElement);
+    })(e5.display || (e5.display = {}));
+    var display = e5.display;
 })(e5 || (e5 = {}));
 var e5;
 (function (e5) {
-    (function (ui) {
+    (function (display) {
         var IToastLayout = (function () {
             function IToastLayout() {
                 this.top = "top";
@@ -2748,7 +2407,7 @@ var e5;
             }
             return IToastLayout;
         })();
-        ui.IToastLayout = IToastLayout;
+        display.IToastLayout = IToastLayout;
 
         var Toast = (function () {
             function Toast() {
@@ -2851,10 +2510,70 @@ var e5;
             Toast._running = false;
             return Toast;
         })();
-        ui.Toast = Toast;
-    })(e5.ui || (e5.ui = {}));
-    var ui = e5.ui;
+        display.Toast = Toast;
+    })(e5.display || (e5.display = {}));
+    var display = e5.display;
 })(e5 || (e5 = {}));
+var e5;
+(function (e5) {
+    (function (display) {
+        var Painter = (function () {
+            function Painter() {
+            }
+            Painter.draw = function (text, fillStyle, fontSize, fontFamily, paddingLeft, paddingRight, height) {
+                height = height ? height : Math.ceil(fontSize * 1.2);
+                paddingLeft = paddingLeft ? paddingLeft : 0;
+                paddingRight = paddingRight ? paddingRight : 0;
+                var width = Painter.measureText(text, fontSize, fontFamily);
+                width += paddingLeft + paddingRight;
+
+                var ca = document.createElement("canvas");
+                ca.width = width;
+                ca.height = height;
+
+                var ctx = ca.getContext("2d");
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = fillStyle;
+                ctx.font = fontSize + "px " + fontFamily;
+                ctx.fillText(text, paddingLeft, height * 0.5);
+
+                return ca;
+            };
+
+            Painter.measureText = function (text, fontSize, fontFamily) {
+                var can = $("<canvas width='512' height='512'></canvas>");
+                var ctx = can[0].getContext("2d");
+                ctx.font = fontSize + "px " + fontFamily;
+                var mes = ctx.measureText(text);
+                return mes.width;
+            };
+            return Painter;
+        })();
+        display.Painter = Painter;
+    })(e5.display || (e5.display = {}));
+    var display = e5.display;
+})(e5 || (e5 = {}));
+/// <reference path='ts/definitions/jquery-1.10.2.d.ts' />
+/// <reference path='ts/definitions/TweenMax.d.ts' />
+/// <reference path='ts/e5/core/Core.ts' />
+/// <reference path='ts/e5/core/Caps.ts' />
+/// <reference path='ts/e5/core/Extensions.ts' />
+/// <reference path='ts/e5/math/Calc.ts' />
+/// <reference path='ts/e5/math/Geom.ts' />
+/// <reference path='ts/e5/core/Slot.ts' />
+/// <reference path='ts/e5/core/Signal.ts' />
+/// <reference path='ts/e5/core/Player.ts' />
+/// <reference path='ts/e5/model/FormManager.ts' />
+/// <reference path='ts/e5/text/Text.ts' />
+/// <reference path='ts/e5/control/History.ts' />
+/// <reference path='ts/e5/input/Interactor.ts' />
+/// <reference path='ts/e5/input/Dragger.ts' />
+/// <reference path='ts/e5/input/Scroller.ts' />
+/// <reference path='ts/e5/input/ScrollerModes.ts' />
+/// <reference path='ts/e5/display/Slider.ts' />
+/// <reference path='ts/e5/display/Slideshow.ts' />
+/// <reference path='ts/e5/display/Toast.ts' />
+/// <reference path='ts/e5/display/Painter.ts' />
 var engage;
 (function (engage) {
     (function (model) {
@@ -2884,48 +2603,56 @@ var engage;
                 Ressource.publishType = publishType;
 
                 //            console.log("SET PUBLISH TYPE", publishType);
-                if (publishType == engage.model.PublishType.RELEASE_ENGAGE_APP) {
+                if (publishType == model.PublishType.RELEASE_ENGAGE_APP) {
                     Ressource.ASSET_PATH = "engage-app/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "http://engage-interreg.eu/engage-app/media";
                     Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     Ressource.CLOUD_DATA_REQUEST = "http://engage-interreg.eu/engage-app/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "http://engage-interreg.eu/engage-app/upload.php";
-                } else if (publishType == engage.model.PublishType.RELEASE_ENGAGE_MAP) {
-                    Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
-                    Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
+                    Ressource.FACEBOOK_FEED = "http://engage-interreg.eu/engage-selfie/php/feed.php";
+                } else if (publishType == model.PublishType.RELEASE_ENGAGE_MAP) {
+                    Ressource.ASSET_PATH = "/engage-map/assets";
+                    Ressource.PEOPLE_MEDIA_PATH = "/engage-app/php/media";
                     Ressource.MEDIA_PATH = "/assets/best_practices/";
-                    Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
-                    Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.DEBUG_NETWORK) {
+                    Ressource.CLOUD_DATA_REQUEST = "/engage-map/php/Service.php?operation=export&out=json";
+                    Ressource.UPLOAD_URL = "/engage-app/php/upload.php";
+                    Ressource.FACEBOOK_FEED = "/engage-selfie/php/feed.php";
+                } else if (publishType == model.PublishType.DEBUG_NETWORK) {
                     Ressource.ASSET_PATH = "engage-app/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "http://192.168.1.26/eventfive/web/engage-app/php/media";
                     Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     Ressource.CLOUD_DATA_REQUEST = "http://192.168.1.26/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "http://192.168.1.26/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.DEBUG_BROWSER) {
+                    Ressource.FACEBOOK_FEED = "http://192.168.1.26/eventfive/web/engage-selfie/php/feed.php";
+                } else if (publishType == model.PublishType.DEBUG_BROWSER) {
                     Ressource.ASSET_PATH = "/eventfive/web/engage-app/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
-                    Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
+                    Ressource.MEDIA_PATH = "/eventfive/web/engage-app/php/media/";
                     Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.DEBUG_SERVER) {
+                    Ressource.FACEBOOK_FEED = "/eventfive/web/engage-selfie/php/feed.php";
+                } else if (publishType == model.PublishType.DEBUG_SERVER) {
                     Ressource.ASSET_PATH = "http://www.engage-interreg.eu/engage-map/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "http://www.engage-interreg.eu/engage-app/media";
                     Ressource.MEDIA_PATH = "http://www.engage-interreg.eu/assets/best_practice/";
                     Ressource.CLOUD_DATA_REQUEST = "http://www.engage-interreg.eu/engage-app/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "http://engage-interreg.eu/engage-app/upload.php";
-                } else if (publishType == engage.model.PublishType.ADMIN) {
+                    Ressource.FACEBOOK_FEED = "http://engage-interreg.eu/engage-selfie/php/feed.php";
+                } else if (publishType == model.PublishType.ADMIN) {
                     Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "/eventfive/web/engage-app/php/media";
                     Ressource.MEDIA_PATH = "/assets/best_practices/";
                     Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
-                } else if (publishType == engage.model.PublishType.RELEASE_ENGAGE_SELFIE) {
+                    Ressource.FACEBOOK_FEED = "/eventfive/web/engage-selfie/php/feed.php";
+                } else if (publishType == model.PublishType.RELEASE_ENGAGE_SELFIE) {
                     Ressource.ASSET_PATH = "/engage-map/assets";
                     Ressource.PEOPLE_MEDIA_PATH = "/engage-app/media";
-                    Ressource.MEDIA_PATH = "/assets/best_practices/";
+                    Ressource.MEDIA_PATH = "/engage-app/media/";
                     Ressource.CLOUD_DATA_REQUEST = "/engage-app/Service.php?operation=export&out=json";
                     Ressource.UPLOAD_URL = "/engage-app/upload.php";
+                    Ressource.FACEBOOK_FEED = "/engage-selfie/php/feed.php";
+                    Ressource.CAMERA_SWF = "/engage-selfie/flash/Main.swf";
                 }
             };
             Ressource.ASSET_PATH = "/eventfive/web/engage-map/assets";
@@ -2934,6 +2661,10 @@ var engage;
             Ressource.CLOUD_DATA_REQUEST = "/eventfive/web/engage-map/php/Service.php?operation=export&out=json";
             Ressource.CLOUD_DATA_OFFLINE = "data.init.json";
             Ressource.UPLOAD_URL = "/eventfive/web/engage-app/php/upload.php";
+            Ressource.FACEBOOK_FEED = "/eventfive/web/engage-selfie/php/feed.php";
+            Ressource.CAMERA_SWF = "/eventfive/web/engage-selfie/flash/Main.swf";
+
+            Ressource.FACEBOOK_APP_ID = "1468431400058333";
 
             Ressource.publishType = "";
             return Ressource;
@@ -3015,6 +2746,15 @@ var engage;
             BaseDataManager.prototype.handleDataSuccess = function (data) {
                 this.data = data;
                 this.resolve();
+
+                //TODO: NOT FINAL
+                var l = this.data.media.length;
+                for (var i = 0; i < l; ++i) {
+                    var media = this.data.media[i];
+                    media.fileName = media.path;
+                    media.path = engage.model.Ressource.MEDIA_PATH + media.path;
+                }
+
                 this.finalize();
                 this.onComplete.dispatch();
             };
@@ -3244,14 +2984,6 @@ var engage;
                 for (var i = 0; i < l; ++i) {
                     var label = this.data.ui_label[i];
                     this._labels[label.key] = label.value;
-                }
-
-                //TODO: NOT FINAL
-                var l = this.data.media.length;
-                for (var i = 0; i < l; ++i) {
-                    var media = this.data.media[i];
-                    media.fileName = media.path;
-                    media.path = engage.model.Ressource.MEDIA_PATH + media.path;
                 }
 
                 this.data.menu.sort(function (a, b) {
@@ -3769,15 +3501,15 @@ var engage;
                 _super.prototype.dispose.call(this);
             };
             return MapElement;
-        })(e5.ui.MediaElement);
+        })(e5.display.MediaElement);
         map.MapElement = MapElement;
-        e5.ui.MediaFactory.addClass("map", engage.map.MapElement);
+        e5.display.MediaFactory.addClass("map", engage.map.MapElement);
     })(engage.map || (engage.map = {}));
     var map = engage.map;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (map) {
+    (function (_map) {
         var MapMarker = (function () {
             function MapMarker(app, map, data, layer, position) {
                 this.app = app;
@@ -3958,13 +3690,13 @@ var engage;
             MapMarker._iconURLsResolved = false;
             return MapMarker;
         })();
-        map.MapMarker = MapMarker;
+        _map.MapMarker = MapMarker;
     })(engage.map || (engage.map = {}));
     var map = engage.map;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (map) {
+    (function (_map) {
         var MapHandler = (function () {
             function MapHandler(app, wrapper) {
                 this.app = app;
@@ -4003,7 +3735,13 @@ var engage;
                 tileOpt.minZoom = 4;
                 tileOpt.maxZoom = 10;
 
-                this._baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
+                var map_provider = this.app.manager.label("map_provider");
+                if (!map_provider)
+                    map_provider = "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";
+                this._baseLayer = new L.TileLayer(map_provider, tileOpt);
+
+                //this._baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
+                //http://a.tile.cloudmade.com/a7ed51e7707c4f2f99ac6cd3b6818c8d/31028/256/10/532/334.png
                 this._map.addLayer(this._baseLayer);
 
                 //add a layer holding all markers
@@ -4197,7 +3935,7 @@ var engage;
             };
             return MapHandler;
         })();
-        map.MapHandler = MapHandler;
+        _map.MapHandler = MapHandler;
     })(engage.map || (engage.map = {}));
     var map = engage.map;
 })(engage || (engage = {}));
@@ -4655,7 +4393,7 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (map) {
+    (function (_map) {
         var MiniMap = (function () {
             function MiniMap(wrapper) {
                 this.wrapper = wrapper;
@@ -4767,13 +4505,13 @@ var engage;
             };
             return MiniMap;
         })();
-        map.MiniMap = MiniMap;
+        _map.MiniMap = MiniMap;
     })(engage.map || (engage.map = {}));
     var map = engage.map;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (map) {
+    (function (_map) {
         var ZoomSlider = (function (_super) {
             __extends(ZoomSlider, _super);
             function ZoomSlider(map, wrapper) {
@@ -4794,8 +4532,8 @@ var engage;
                 this.setValue(this._map.getZoom());
             };
             return ZoomSlider;
-        })(e5.ui.Slider);
-        map.ZoomSlider = ZoomSlider;
+        })(e5.display.Slider);
+        _map.ZoomSlider = ZoomSlider;
     })(engage.map || (engage.map = {}));
     var map = engage.map;
 })(engage || (engage = {}));
@@ -4942,7 +4680,7 @@ var engage;
 
                 var slide = $("<div></div>");
                 this._leftContent.append(slide);
-                this._slideshow = new e5.ui.Slideshow(slide);
+                this._slideshow = new e5.display.Slideshow(slide);
 
                 //right
                 this._rightContent = $("<div class='right_content'></div>");
@@ -5182,6 +4920,28 @@ $(window).ready(function () {
     if (wrapper.length > 0)
         new engage.Application(wrapper);
 });
+/// <reference path='../framework/references.ts' />
+/// <reference path='ts/definitions/leaflet.d.ts' />
+/// <reference path='ts/definitions/leaflet.markercluster.d.ts' />
+//JUST TO FIX IT
+/// <reference path='../baul/ts/definitions/leaflet.draw.d.ts' />
+/// <reference path='ts/engage/model/PublishType.ts' />
+/// <reference path='ts/engage/model/Ressource.ts' />
+/// <reference path='ts/engage/model/DataStructure.ts' />
+/// <reference path='ts/engage/model/BaseDataManager.ts' />
+/// <reference path='ts/engage/model/DataManager.ts' />
+/// <reference path='ts/engage/model/FilterHandler.ts' />
+/// <reference path='ts/engage/map/LineHandler.ts' />
+/// <reference path='ts/engage/map/MapElement.ts' />
+/// <reference path='ts/engage/map/MapMarker.ts' />
+/// <reference path='ts/engage/map/MapHandler.ts' />
+/// <reference path='ts/engage/map/FilterList.ts' />
+/// <reference path='ts/engage/map/ProjectListItem.ts' />
+/// <reference path='ts/engage/map/ProjectList.ts' />
+/// <reference path='ts/engage/map/MiniMap.ts' />
+/// <reference path='ts/engage/map/ZoomSlider.ts' />
+/// <reference path='ts/engage/map/ProjectPreview.ts' />
+/// <reference path='ts/engage/Application.ts' />
 var engage;
 (function (engage) {
     (function (people) {
@@ -5353,7 +5113,11 @@ var engage;
                 popOpt.maxWidth = 39;
                 popOpt.minWidth = 39;
 
-                var realImage = "<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />";
+                //var realImage = "<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />";
+                var data = this.data;
+                var realImage = window.useLightbox ? "<a data-lightbox='people_on_map' href='" + data.media.path + "' title='" + data.name + " - " + data.comment + "'>" : "";
+                realImage += "<img class='popup_icon' data-id='" + this.data.id + "' src='" + engage.model.Ressource.PEOPLE_MEDIA_PATH + "/" + "thumb_" + this.data.media.fileName + "' />";
+                realImage += window.useLightbox ? "</a>" : "";
 
                 //var loaderImage = "<img class='popup_loader' src='"+engage.model.Ressource.ASSET_PATH+ "/people-loader.gif' />";
                 this.marker.bindPopup(realImage, popOpt);
@@ -5377,18 +5141,16 @@ var engage;
 (function (engage) {
     (function (people) {
         var PeopleMap = (function () {
-            function PeopleMap(app) {
-                this.app = app;
+            function PeopleMap(manager) {
+                this.manager = manager;
                 this._markers = [];
                 this._actionTimeout = -1;
                 this._randomEnabled = false;
                 this._randomInterval = -1;
-                this.init();
-            }
-            PeopleMap.prototype.init = function () {
-                var _this = this;
                 this.element = $("<div id='people_map'></div>");
-
+            }
+            PeopleMap.prototype.create = function () {
+                var _this = this;
                 var initialPosition = new L.LatLng(51.53534, 7.760203);
 
                 //add the map layer
@@ -5419,7 +5181,7 @@ var engage;
                 });
 
                 //add all people marker
-                var pd = this.app.manager.data.people_data;
+                var pd = this.manager.data.people_data;
                 var l = pd.length;
                 for (var i = 0; i < l; ++i) {
                     this.addMarker(pd[i]);
@@ -5632,8 +5394,9 @@ var engage;
 
                 this.camera = new engage.media.CameraUtil(this.app);
 
-                this.map = new engage.people.PeopleMap(this.app);
+                this.map = new engage.people.PeopleMap(this.app.manager);
                 this.element.append(this.map.element);
+                this.map.create();
 
                 this.btnTakeImage = $("<div class='take_image'></div>");
                 this.element.append(this.btnTakeImage);
@@ -5714,7 +5477,7 @@ var engage;
 
             PeoplePage.prototype.open = function () {
                 if (this._openCount >= 0) {
-                    engage.people.PeoplePreMessage.show(this.app);
+                    people.PeoplePreMessage.show(this.app);
                 }
                 this._openCount++;
             };
@@ -5735,7 +5498,7 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (menu) {
+    (function (_menu) {
         var MenuHandler = (function () {
             function MenuHandler(app, container) {
                 this.app = app;
@@ -5748,7 +5511,11 @@ var engage;
                 var item;
                 var self = this;
                 for (var i = 0; i < l; ++i) {
+                    if (!menu[i].enabled)
+                        continue;
                     var imgURL = engage.model.Ressource.ASSET_PATH + "/" + menu[i].icon_url;
+                    if (menu[i].icon_url.indexOf("http") >= 0)
+                        imgURL = menu[i].icon_url;
                     item = $('<div class="menu_item" data-type="' + menu[i].page.type + '" data-key="' + menu[i].page.key + '" data-label="' + menu[i].label + '"><img src="' + imgURL + '"/></div>');
                     this.container.append(item);
                     item.bind('click', function () {
@@ -5791,7 +5558,7 @@ var engage;
             };
             return MenuHandler;
         })();
-        menu.MenuHandler = MenuHandler;
+        _menu.MenuHandler = MenuHandler;
     })(engage.menu || (engage.menu = {}));
     var menu = engage.menu;
 })(engage || (engage = {}));
@@ -5846,7 +5613,7 @@ var engage;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (page) {
+    (function (_page) {
         var PageHandler = (function () {
             function PageHandler(app, container) {
                 this.app = app;
@@ -5856,9 +5623,12 @@ var engage;
             PageHandler.prototype.create = function () {
                 var media = $("<div class='media'></div>");
                 this.container.append(media);
-                this.mediaSlide = new e5.ui.Slideshow(media);
+                this.mediaSlide = new e5.display.Slideshow(media);
                 this.mediaSlide.minContainerHeight = 10;
                 this.mediaSlide.setContainerPadding(0);
+
+                this.iframe = $('<iframe src="" height="1800" width="100%"></iframe>');
+                this.container.append(this.iframe);
 
                 this.title = $("<h1></h1>");
                 this.container.append(this.title);
@@ -5876,18 +5646,40 @@ var engage;
                 if (this._key == key)
                     return;
                 this._key = key;
-                if (this.app.manager.getPageByKey(this._key).media)
+
+                //            console.log(this.app.manager.getPageByKey(this._key).media);
+                var page = this.app.manager.getPageByKey(this._key);
+
+                //hide/show elements based on "is iframe page"
+                if (page.iframe_url) {
+                    this.title.addClass("hidden");
+                    this.text.addClass("hidden");
+                    this.iframe.attr("src", page.iframe_url);
+                    this.iframe.attr("height", page.iframe_height ? page.iframe_height : 1500);
+                    this.iframe.removeClass("hidden");
+                } else {
+                    this.title.removeClass("hidden");
+                    this.text.removeClass("hidden");
+                    this.iframe.addClass("hidden");
+                }
+
+                //show/hide slideshow
+                if (page.media && page.media.length > 0) {
+                    this.mediaSlide.wrapper.removeClass("hidden");
                     this.mediaSlide.load(this.app.manager.getPageByKey(this._key).media);
+                    setTimeout(function () {
+                        _this.mediaSlide.resize();
+                        _this.mediaSlide.show();
+                    }, 500);
+                } else {
+                    this.mediaSlide.wrapper.addClass("hidden");
+                }
+
                 this.title.text(this.app.manager.label("page_title_" + this._key));
                 this.text.html(this.app.manager.label("page_text_" + this._key));
 
                 this.container.scrollTop();
-
                 //TODO: clean this hack
-                setTimeout(function () {
-                    _this.mediaSlide.resize();
-                    _this.mediaSlide.show();
-                }, 500);
             };
             PageHandler.prototype.handleClickItem = function (item) {
                 var lang = item.attr("data-lang");
@@ -5902,13 +5694,13 @@ var engage;
             };
             return PageHandler;
         })();
-        page.PageHandler = PageHandler;
+        _page.PageHandler = PageHandler;
     })(engage.page || (engage.page = {}));
     var page = engage.page;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
-    (function (media) {
+    (function (_media) {
         var CameraUtil = (function () {
             function CameraUtil(app) {
                 this.app = app;
@@ -5924,7 +5716,7 @@ var engage;
             CameraUtil.prototype.capture = function () {
                 var _this = this;
                 if (!navigator.camera) {
-                    e5.ui.Toast.show({ message: "Camera not found", key: "camera_not_found" });
+                    e5.display.Toast.show({ message: "Camera not found", key: "camera_not_found" });
                     return;
                 }
 
@@ -5966,7 +5758,7 @@ var engage;
 
             CameraUtil.prototype.upload = function (name, comment, latitude, longitude) {
                 var _this = this;
-                e5.ui.Toast.show({ message: "Upload data... please wait" });
+                e5.display.Toast.show({ message: "Upload data... please wait" });
 
                 this._newData = {
                     id: Math.round(Math.random() * 100),
@@ -5977,6 +5769,8 @@ var engage;
                     media: null,
                     country: "",
                     marker: null,
+                    origin: "engage",
+                    facebook_id: "",
                     hasLocation: latitude != 0 && longitude != 0
                 };
 
@@ -6026,20 +5820,38 @@ var engage;
                     this.app.manager.data.people_data.push(this._newData);
                 }
 
-                e5.ui.Toast.show({ message: "Your image is successfully uploaded" });
-                e5.ui.Toast.show({ message: resp.message, duration: 3000, allowClose: true });
+                e5.display.Toast.show({ message: "Your image is successfully uploaded" });
+                e5.display.Toast.show({ message: resp.message, duration: 3000, allowClose: true });
                 this.onUploadSuccess.dispatch(this._newData);
             };
 
             CameraUtil.prototype.handleUploadFailed = function (r) {
-                e5.ui.Toast.show({ message: "Your image could not be uploaded" });
+                e5.display.Toast.show({ message: "Your image could not be uploaded", duration: 8000 });
                 this.onUploadError.dispatch(this.imageURI, r.response);
             };
             return CameraUtil;
         })();
-        media.CameraUtil = CameraUtil;
+        _media.CameraUtil = CameraUtil;
     })(engage.media || (engage.media = {}));
     var media = engage.media;
+})(engage || (engage = {}));
+var engage;
+(function (engage) {
+    (function (model) {
+        var Preloader = (function () {
+            function Preloader() {
+                this._container = $("<div id='preloader'></div>");
+                $("body").append(this._container);
+            }
+            Preloader.prototype.dispose = function () {
+                this._container.remove();
+                this._container = null;
+            };
+            return Preloader;
+        })();
+        model.Preloader = Preloader;
+    })(engage.model || (engage.model = {}));
+    var model = engage.model;
 })(engage || (engage = {}));
 var engage;
 (function (engage) {
@@ -6047,8 +5859,11 @@ var engage;
         __extends(MobileApplication, _super);
         function MobileApplication(wrapper) {
             $.support.cors = true;
+            window.useLightbox = false;
 
             _super.call(this, wrapper);
+
+            this._preloader = new engage.model.Preloader();
 
             this.manager.onError.add(this.onErrorLoadData, this);
         }
@@ -6114,8 +5929,12 @@ var engage;
             this._hei = $("#content").height();
             e5.core.Player.setEnabled(true);
             e5.core.Player.onTick.add(this.handleTick, this);
+
             //for test only
-            //            this.openPeople("TEST");
+            //this.openPeople("TEST");
+            //this.people.form.show();
+            this._preloader.dispose();
+            this._preloader = null;
         };
 
         MobileApplication.prototype.handleTick = function () {
@@ -6171,3 +5990,17 @@ $(window).ready(function () {
     if (wrapper.length > 0)
         new engage.MobileApplication(wrapper);
 });
+/// <reference path='../engage-map/references.ts' />
+/// <reference path='ts/definitions/phonegap.d.ts' />
+/// <reference path='ts/engage/people/PeopleContent.ts' />
+/// <reference path='ts/engage/people/PeoplePreMessage.ts' />
+/// <reference path='ts/engage/people/PeopleMarker.ts' />
+/// <reference path='ts/engage/people/PeopleMap.ts' />
+/// <reference path='ts/engage/people/PeopleForm.ts' />
+/// <reference path='ts/engage/people/PeoplePage.ts' />
+/// <reference path='ts/engage/menu/MenuHandler.ts' />
+/// <reference path='ts/engage/media/GPSHandler.ts' />
+/// <reference path='ts/engage/page/PageHandler.ts' />
+/// <reference path='ts/engage/media/CameraUtil.ts' />
+/// <reference path='ts/engage/model/Preloader.ts' />
+/// <reference path='ts/engage/MobileApplication.ts' />
