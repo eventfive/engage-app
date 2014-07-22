@@ -3735,9 +3735,9 @@ var engage;
                 tileOpt.minZoom = 4;
                 tileOpt.maxZoom = 10;
 
-                var map_provider = this.app.manager.label("map_provider");
-                if (!map_provider)
-                    map_provider = "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";
+                //            var map_provider: string = this.app.manager.label("map_provider");
+                //            if (!map_provider)
+                var map_provider = "http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";
                 this._baseLayer = new L.TileLayer(map_provider, tileOpt);
 
                 //this._baseLayer = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', tileOpt);
